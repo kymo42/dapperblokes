@@ -17,10 +17,4 @@
 			"bucket_name": "dapperblokes-hair-media",
 		},
 	],
-	// Worker Loader for plugin sandboxing
-	"worker_loaders": [
-		{
-			"binding": "LOADER",
-		},
-	],
 }
