@@ -8,8 +8,7 @@
 		{
 			"binding": "DB",
 			"database_name": "dapperblokes-hair",
-			// Run `wrangler d1 create my-emdash-site` and paste the real ID here for deploy
-			"database_id": "local",
+			"database_id": "58041d61-baf4-4d63-b694-53b3e062fe80",
 		},
 	],
 	"r2_buckets": [
