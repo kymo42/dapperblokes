@@ -1,0 +1,371 @@
+{
+	"$schema": "https://emdashcms.com/seed.schema.json",
+	"version": "1",
+	"meta": {
+		"name": "Dapper Blokes Hair",
+		"description": "Cloudflare-ready EmDash site for a hairstylist with services, products, and booking",
+		"author": "Dapper Blokes"
+	},
+
+	"settings": {
+		"title": "Dapper Blokes Hair",
+		"tagline": "Precision cuts, premium products, and easy booking"
+	},
+
+	"collections": [
+		{
+			"slug": "products",
+			"label": "Products",
+			"labelSingular": "Product",
+			"supports": ["drafts", "revisions", "search", "seo"],
+			"fields": [
+				{
+					"slug": "title",
+					"label": "Product Name",
+					"type": "string",
+					"required": true,
+					"searchable": true
+				},
+				{
+					"slug": "featured_image",
+					"label": "Featured Image",
+					"type": "image"
+				},
+				{
+					"slug": "price_cents",
+					"label": "Price (Cents)",
+					"type": "number",
+					"required": true
+				},
+				{
+					"slug": "square_catalog_id",
+					"label": "Square Catalog ID",
+					"type": "string"
+				},
+				{
+					"slug": "description",
+					"label": "Description",
+					"type": "text",
+					"searchable": true
+				},
+				{
+					"slug": "details",
+					"label": "Details",
+					"type": "portableText"
+				},
+				{
+					"slug": "in_stock",
+					"label": "In Stock",
+					"type": "boolean"
+				}
+			]
+		},
+		{
+			"slug": "services",
+			"label": "Services",
+			"labelSingular": "Service",
+			"supports": ["drafts", "revisions", "search", "seo"],
+			"fields": [
+				{
+					"slug": "title",
+					"label": "Service Name",
+					"type": "string",
+					"required": true,
+					"searchable": true
+				},
+				{
+					"slug": "featured_image",
+					"label": "Featured Image",
+					"type": "image"
+				},
+				{
+					"slug": "price_cents",
+					"label": "Price (Cents)",
+					"type": "number",
+					"required": true
+				},
+				{
+					"slug": "duration_minutes",
+					"label": "Duration (Minutes)",
+					"type": "number"
+				},
+				{
+					"slug": "square_service_variation_id",
+					"label": "Square Service Variation ID",
+					"type": "string"
+				},
+				{
+					"slug": "summary",
+					"label": "Summary",
+					"type": "text",
+					"searchable": true
+				},
+				{
+					"slug": "details",
+					"label": "Details",
+					"type": "portableText"
+				}
+			]
+		},
+		{
+			"slug": "posts",
+			"label": "Journal",
+			"labelSingular": "Post",
+			"supports": ["drafts", "revisions", "search", "seo"],
+			"fields": [
+				{
+					"slug": "title",
+					"label": "Title",
+					"type": "string",
+					"required": true,
+					"searchable": true
+				},
+				{
+					"slug": "featured_image",
+					"label": "Featured Image",
+					"type": "image"
+				},
+				{
+					"slug": "content",
+					"label": "Content",
+					"type": "portableText",
+					"searchable": true
+				},
+				{
+					"slug": "excerpt",
+					"label": "Excerpt",
+					"type": "text"
+				}
+			]
+		},
+		{
+			"slug": "pages",
+			"label": "Pages",
+			"labelSingular": "Page",
+			"supports": ["drafts", "revisions", "search"],
+			"fields": [
+				{
+					"slug": "title",
+					"label": "Title",
+					"type": "string",
+					"required": true,
+					"searchable": true
+				},
+				{
+					"slug": "content",
+					"label": "Content",
+					"type": "portableText",
+					"searchable": true
+				}
+			]
+		}
+	],
+
+	"taxonomies": [
+		{
+			"name": "category",
+			"label": "Categories",
+			"labelSingular": "Category",
+			"hierarchical": true,
+			"collections": ["posts"],
+			"terms": [
+				{ "slug": "style-guides", "label": "Style Guides" },
+				{ "slug": "shop-updates", "label": "Shop Updates" }
+			]
+		},
+		{
+			"name": "tag",
+			"label": "Tags",
+			"labelSingular": "Tag",
+			"hierarchical": false,
+			"collections": ["posts"],
+			"terms": [
+				{ "slug": "haircare", "label": "Haircare" },
+				{ "slug": "mens-style", "label": "Mens Style" }
+			]
+		}
+	],
+
+	"menus": [
+		{
+			"name": "primary",
+			"label": "Primary Navigation",
+			"items": [
+				{ "type": "custom", "label": "Home", "url": "/" },
+				{ "type": "custom", "label": "Services", "url": "/services" },
+				{ "type": "custom", "label": "Shop", "url": "/shop" },
+				{ "type": "custom", "label": "Journal", "url": "/posts" },
+				{ "type": "custom", "label": "Contact", "url": "/contact" }
+			]
+		}
+	],
+
+	"widgetAreas": [
+		{
+			"name": "footer",
+			"label": "Footer",
+			"description": "Footer widget area",
+			"widgets": [
+				{
+					"type": "component",
+					"componentId": "core:search",
+					"title": "Search"
+				},
+				{
+					"type": "component",
+					"componentId": "core:recent-posts",
+					"title": "Latest Journal",
+					"settings": { "count": 3 }
+				}
+			]
+		}
+	],
+
+	"content": {
+		"pages": [
+			{
+				"id": "contact",
+				"slug": "contact",
+				"status": "published",
+				"data": {
+					"title": "Contact",
+					"content": [
+						{
+							"_type": "block",
+							"style": "normal",
+							"children": [
+								{
+									"_type": "span",
+									"text": "Visit Dapper Blokes Hair for premium cuts and styling. For appointments, use the booking button on the homepage."
+								}
+							]
+						}
+					]
+				}
+			}
+		],
+		"services": [
+			{
+				"id": "precision-cut",
+				"slug": "precision-cut",
+				"status": "published",
+				"data": {
+					"title": "Precision Cut",
+					"price_cents": 5500,
+					"duration_minutes": 45,
+					"summary": "A detailed cut tailored to your face shape and style goals.",
+					"details": [
+						{
+							"_type": "block",
+							"style": "normal",
+							"children": [
+								{
+									"_type": "span",
+									"text": "Includes consultation, wash, precision cut, and finish styling."
+								}
+							]
+						}
+					]
+				}
+			},
+			{
+				"id": "beard-shape",
+				"slug": "beard-shape",
+				"status": "published",
+				"data": {
+					"title": "Beard Shape and Detail",
+					"price_cents": 3000,
+					"duration_minutes": 25,
+					"summary": "Line work and shaping for a clean, defined finish.",
+					"details": [
+						{
+							"_type": "block",
+							"style": "normal",
+							"children": [
+								{
+									"_type": "span",
+									"text": "Perfect as a standalone service or combined with a cut."
+								}
+							]
+						}
+					]
+				}
+			}
+		],
+		"products": [
+			{
+				"id": "matte-paste",
+				"slug": "matte-paste",
+				"status": "published",
+				"data": {
+					"title": "Textured Matte Paste",
+					"price_cents": 2800,
+					"description": "Medium hold matte paste for natural movement.",
+					"in_stock": true,
+					"details": [
+						{
+							"_type": "block",
+							"style": "normal",
+							"children": [
+								{
+									"_type": "span",
+									"text": "Water-soluble formula. Suitable for short to medium hair lengths."
+								}
+							]
+						}
+					]
+				}
+			},
+			{
+				"id": "sea-salt-spray",
+				"slug": "sea-salt-spray",
+				"status": "published",
+				"data": {
+					"title": "Sea Salt Texture Spray",
+					"price_cents": 2400,
+					"description": "Lightweight texture and volume with a natural finish.",
+					"in_stock": true,
+					"details": [
+						{
+							"_type": "block",
+							"style": "normal",
+							"children": [
+								{
+									"_type": "span",
+									"text": "Use on damp hair for effortless texture and movement."
+								}
+							]
+						}
+					]
+				}
+			}
+		],
+		"posts": [
+			{
+				"id": "autumn-style-edit",
+				"slug": "autumn-style-edit",
+				"status": "published",
+				"data": {
+					"title": "Autumn Style Edit",
+					"excerpt": "The cuts and textures clients are requesting this season.",
+					"content": [
+						{
+							"_type": "block",
+							"style": "normal",
+							"children": [
+								{
+									"_type": "span",
+									"text": "This season is all about clean tapers, textured tops, and healthy finish products that hold without stiffness."
+								}
+							]
+						}
+					]
+				},
+				"taxonomies": {
+					"category": ["style-guides"],
+					"tag": ["mens-style", "haircare"]
+				}
+			}
+		]
+	}
+}

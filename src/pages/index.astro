@@ -1,0 +1,71 @@
+---
+import { getEmDashCollection, getSiteSettings } from "emdash";
+import Base from "../layouts/Base.astro";
+import { resolveStarterSiteIdentity } from "../utils/site-identity";
+
+const { entries: services, cacheHint: servicesHint } = await getEmDashCollection("services", {
+	orderBy: { title: "asc" },
+});
+const { entries: products, cacheHint: productsHint } = await getEmDashCollection("products", {
+	orderBy: { title: "asc" },
+});
+
+const { siteTitle, siteTagline } = resolveStarterSiteIdentity(await getSiteSettings());
+Astro.cache.set(servicesHint, productsHint);
+
+const toCurrency = (cents: number | null | undefined) =>
+	new Intl.NumberFormat("en-AU", { style: "currency", currency: "AUD" }).format((cents ?? 0) / 100);
+---
+
+<Base title={siteTitle} description={siteTagline}>
+	<section class="card" style="padding:1.5rem; margin-bottom:1rem;">
+		<span class="badge">Dapper Blokes Hair</span>
+		<h1 style="margin:0.6rem 0 0.5rem;">Style that works in the chair and in real life.</h1>
+		<p style="max-width:65ch; color:var(--muted);">
+			Book your next appointment, browse retail products, and sync checkout with Square POS. This site is built to run on Cloudflare with EmDash and Astro.
+		</p>
+		<div style="display:flex; gap:0.6rem; flex-wrap:wrap; margin-top:0.9rem;">
+			<a class="button button-primary" href="/services">Book Services</a>
+			<a class="button button-outline" href="/shop">Shop Products</a>
+			<a class="button button-outline" href="/posts">Style Journal</a>
+		</div>
+	</section>
+
+	<section style="margin-bottom:1rem;">
+		<div style="display:flex; justify-content:space-between; align-items:end; gap:1rem;">
+			<h2 style="margin:0;">Popular Services</h2>
+			<a href="/services">View all services</a>
+		</div>
+		<div class="grid grid-3" style="margin-top:0.8rem;">
+			{services.slice(0, 3).map((service) => (
+				<article class="card">
+					<h3 style="margin-top:0;">{service.data.title}</h3>
+					<p>{service.data.summary}</p>
+					<p class="price">{toCurrency(service.data.price_cents)}</p>
+					<p style="margin-top:0.2rem; color:var(--muted);">
+						{service.data.duration_minutes ? `${service.data.duration_minutes} min` : "Duration on request"}
+					</p>
+				</article>
+			))}
+		</div>
+	</section>
+
+	<section>
+		<div style="display:flex; justify-content:space-between; align-items:end; gap:1rem;">
+			<h2 style="margin:0;">Featured Products</h2>
+			<a href="/shop">Visit store</a>
+		</div>
+		<div class="grid grid-3" style="margin-top:0.8rem;">
+			{products.slice(0, 3).map((product) => (
+				<article class="card">
+					<h3 style="margin-top:0;">{product.data.title}</h3>
+					<p>{product.data.description}</p>
+					<p class="price">{toCurrency(product.data.price_cents)}</p>
+					<p style="color:var(--muted); margin-top:0.3rem;">
+						{product.data.in_stock ? "In stock" : "Out of stock"}
+					</p>
+				</article>
+			))}
+		</div>
+	</section>
+</Base>

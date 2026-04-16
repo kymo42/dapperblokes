@@ -1,0 +1,279 @@
+---
+import { getMenu, getSiteSettings } from "emdash";
+import {
+	WidgetArea,
+	EmDashHead,
+	EmDashBodyStart,
+	EmDashBodyEnd,
+} from "emdash/ui";
+import { createPublicPageContext } from "emdash/page";
+import LiveSearch from "emdash/ui/search";
+import { resolveStarterSiteIdentity } from "../utils/site-identity";
+
+interface Props {
+	title: string;
+	pageTitle?: string | null;
+	description?: string | null;
+	image?: string | null;
+	canonical?: string | null;
+	content?: { collection: string; id: string; slug?: string | null };
+}
+
+const { title, pageTitle, description, image, canonical, content } = Astro.props;
+const { siteTitle, siteTagline, siteLogo, siteFavicon } = resolveStarterSiteIdentity(await getSiteSettings());
+const fullTitle = title.includes(siteTitle) ? title : `${title} - ${siteTitle}`;
+const pageDescription = description ?? siteTagline;
+
+const menu = await getMenu("primary");
+
+const pageCtx = createPublicPageContext({
+	Astro,
+	kind: content ? "content" : "custom",
+	pageType: "website",
+	title: fullTitle,
+	pageTitle: pageTitle ?? title,
+	description: pageDescription,
+	canonical,
+	image,
+	content,
+	siteName: siteTitle,
+});
+---
+
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>{fullTitle}</title>
+		{siteFavicon && <link rel="icon" href={siteFavicon} />}
+		{pageDescription && <meta name="description" content={pageDescription} />}
+		{canonical && <link rel="canonical" href={canonical} />}
+		<EmDashHead page={pageCtx} />
+		<style is:global>
+			:root {
+				--bg: #f4f1ea;
+				--surface: #fff9ee;
+				--text: #1d1b16;
+				--muted: #5a5449;
+				--accent: #b0602f;
+				--accent-dark: #874420;
+				--line: #dac8a3;
+				--radius: 16px;
+				--shadow: 0 14px 34px rgba(50, 29, 13, 0.1);
+			}
+
+			* {
+				box-sizing: border-box;
+			}
+
+			body {
+				margin: 0;
+				font-family: "Fraunces", "Times New Roman", serif;
+				color: var(--text);
+				background:
+					radial-gradient(circle at 0% 0%, #e8dcc3 0%, transparent 50%),
+					radial-gradient(circle at 100% 100%, #ead4bb 0%, transparent 40%),
+					var(--bg);
+				min-height: 100vh;
+			}
+
+			a {
+				color: inherit;
+				text-decoration: none;
+			}
+
+			.site-shell {
+				width: min(1100px, 92vw);
+				margin: 0 auto;
+			}
+
+			header {
+				padding: 1.2rem 0;
+				position: sticky;
+				top: 0;
+				z-index: 10;
+				backdrop-filter: blur(8px);
+			}
+
+			.main-nav {
+				display: flex;
+				align-items: center;
+				justify-content: space-between;
+				gap: 1rem;
+				padding: 0.8rem 1rem;
+				border: 1px solid var(--line);
+				border-radius: 999px;
+				background: rgba(255, 249, 238, 0.88);
+				box-shadow: var(--shadow);
+			}
+
+			.brand {
+				font-size: 1.15rem;
+				font-weight: 700;
+				letter-spacing: 0.03em;
+			}
+
+			.main-nav-links {
+				display: flex;
+				align-items: center;
+				gap: 0.8rem;
+				flex-wrap: wrap;
+			}
+
+			.main-nav-links a {
+				padding: 0.35rem 0.6rem;
+				border-radius: 999px;
+				font-size: 0.95rem;
+				transition: background-color 0.2s ease;
+			}
+
+			.main-nav-links a:hover {
+				background: #f0e4ca;
+			}
+
+			main {
+				padding: 1.2rem 0 2rem;
+			}
+
+			section,
+			article,
+			.card {
+				animation: fade-up 0.45s ease both;
+			}
+
+			.grid {
+				display: grid;
+				gap: 1rem;
+			}
+
+			.grid-3 {
+				grid-template-columns: repeat(3, minmax(0, 1fr));
+			}
+
+			.grid-2 {
+				grid-template-columns: repeat(2, minmax(0, 1fr));
+			}
+
+			.card {
+				background: var(--surface);
+				border: 1px solid var(--line);
+				border-radius: var(--radius);
+				padding: 1rem;
+				box-shadow: var(--shadow);
+			}
+
+			.badge {
+				display: inline-block;
+				padding: 0.2rem 0.55rem;
+				border-radius: 999px;
+				font-size: 0.75rem;
+				letter-spacing: 0.08em;
+				text-transform: uppercase;
+				background: #ead7b8;
+			}
+
+			.button {
+				display: inline-block;
+				padding: 0.55rem 0.9rem;
+				border-radius: 10px;
+				border: 1px solid transparent;
+				font-weight: 600;
+				transition: transform 0.2s ease;
+			}
+
+			.button:hover {
+				transform: translateY(-2px);
+			}
+
+			.button-primary {
+				background: var(--accent);
+				color: #fff;
+			}
+
+			.button-primary:hover {
+				background: var(--accent-dark);
+			}
+
+			.button-outline {
+				border-color: var(--line);
+				background: #fff;
+			}
+
+			.price {
+				font-weight: 700;
+				font-size: 1.05rem;
+			}
+
+			footer {
+				padding: 1.4rem 0 2rem;
+			}
+
+			.footer-wrap {
+				border: 1px solid var(--line);
+				border-radius: var(--radius);
+				background: #fff8e7;
+				padding: 1rem;
+			}
+
+			@media (max-width: 900px) {
+				.grid-3,
+				.grid-2 {
+					grid-template-columns: 1fr;
+				}
+
+				.main-nav {
+					border-radius: 20px;
+					align-items: flex-start;
+					flex-direction: column;
+				}
+			}
+
+			@keyframes fade-up {
+				from {
+					opacity: 0;
+					transform: translateY(10px);
+				}
+				to {
+					opacity: 1;
+					transform: translateY(0);
+				}
+			}
+		</style>
+	</head>
+	<body>
+		<EmDashBodyStart page={pageCtx} />
+
+		<header>
+			<div class="site-shell">
+				<nav class="main-nav" aria-label="Primary">
+					<a class="brand" href="/">
+						{siteLogo
+							? <img src={siteLogo.url} alt={siteLogo.alt || siteTitle} style="height:42px;width:auto;display:block;" />
+							: siteTitle
+						}
+					</a>
+					<div class="main-nav-links">
+						{menu?.items.map((item) => (
+							<a href={item.url} target={item.target}>{item.label}</a>
+						))}
+						<LiveSearch placeholder="Search" collections={["posts", "pages", "services", "products"]} />
+					</div>
+				</nav>
+			</div>
+		</header>
+
+		<main class="site-shell">
+			<slot />
+		</main>
+
+		<footer>
+			<div class="site-shell footer-wrap">
+				<WidgetArea name="footer" />
+				<p>Built with EmDash + Astro on Cloudflare.</p>
+			</div>
+		</footer>
+
+		<EmDashBodyEnd page={pageCtx} />
+	</body>
+</html>

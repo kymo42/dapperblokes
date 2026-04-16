@@ -1,0 +1,55 @@
+---
+import { getEmDashCollection, getSeoMeta, getSiteSettings } from "emdash";
+import { Image, PortableText } from "emdash/ui";
+import Base from "../layouts/Base.astro";
+import { resolveStarterSiteIdentity } from "../utils/site-identity";
+
+const { entries: services, cacheHint } = await getEmDashCollection("services", {
+	orderBy: { title: "asc" },
+});
+Astro.cache.set(cacheHint);
+
+const { siteTitle } = resolveStarterSiteIdentity(await getSiteSettings());
+const seo = getSeoMeta(
+	{
+		id: "services",
+		data: {
+			title: "Services",
+			excerpt: "Explore signature hair services and pricing",
+		},
+	},
+	{
+		siteTitle,
+		siteUrl: Astro.url.origin,
+		path: "/services",
+	}
+);
+
+const toCurrency = (cents: number | null | undefined) =>
+	new Intl.NumberFormat("en-AU", { style: "currency", currency: "AUD" }).format((cents ?? 0) / 100);
+---
+
+<Base title={seo.title} description={seo.description} canonical={seo.canonical}>
+	<section class="card" style="margin-bottom:1rem;">
+		<h1 style="margin-top:0;">Services</h1>
+		<p style="color:var(--muted);">Pricing and service metadata can be synced to Square catalog references.</p>
+	</section>
+
+	<div class="grid grid-2">
+		{services.map((service) => (
+			<article class="card">
+				{service.data.featured_image && <Image image={service.data.featured_image} />}
+				<h2>{service.data.title}</h2>
+				<p>{service.data.summary}</p>
+				<p class="price">{toCurrency(service.data.price_cents)}</p>
+				<p style="color:var(--muted);">
+					{service.data.duration_minutes ? `${service.data.duration_minutes} min` : "Duration on request"}
+				</p>
+				{service.data.details && <PortableText value={service.data.details} />}
+				{service.data.square_service_variation_id && (
+					<p><strong>Square Variation ID:</strong> {service.data.square_service_variation_id}</p>
+				)}
+			</article>
+		))}
+	</div>
+</Base>

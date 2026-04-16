@@ -1,0 +1,34 @@
+---
+import { getEmDashCollection } from "emdash";
+import { Image, PortableText } from "emdash/ui";
+import Base from "../layouts/Base.astro";
+
+const { entries: products, cacheHint } = await getEmDashCollection("products", {
+	orderBy: { title: "asc" },
+});
+Astro.cache.set(cacheHint);
+
+const toCurrency = (cents: number | null | undefined) =>
+	new Intl.NumberFormat("en-AU", { style: "currency", currency: "AUD" }).format((cents ?? 0) / 100);
+---
+
+<Base title="Shop" description="Retail products available at Dapper Blokes Hair">
+	<section class="card" style="margin-bottom:1rem;">
+		<h1 style="margin-top:0;">Shop</h1>
+		<p style="color:var(--muted);">Product records can map directly to Square Catalog IDs for POS-sync checkout.</p>
+	</section>
+
+	<div class="grid grid-3">
+		{products.map((product) => (
+			<article class="card">
+				{product.data.featured_image && <Image image={product.data.featured_image} />}
+				<h2>{product.data.title}</h2>
+				<p>{product.data.description}</p>
+				<p class="price">{toCurrency(product.data.price_cents)}</p>
+				<p style="color:var(--muted);">{product.data.in_stock ? "In stock" : "Out of stock"}</p>
+				{product.data.details && <PortableText value={product.data.details} />}
+				{product.data.square_catalog_id && <p><strong>Square Catalog ID:</strong> {product.data.square_catalog_id}</p>}
+			</article>
+		))}
+	</div>
+</Base>
