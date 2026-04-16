@@ -18,54 +18,170 @@ const toCurrency = (cents: number | null | undefined) =>
 ---
 
 <Base title={siteTitle} description={siteTagline}>
-	<section class="card" style="padding:1.5rem; margin-bottom:1rem;">
-		<span class="badge">Dapper Blokes Hair</span>
-		<h1 style="margin:0.6rem 0 0.5rem;">Style that works in the chair and in real life.</h1>
-		<p style="max-width:65ch; color:var(--muted);">
-			Book your next appointment, browse retail products, and sync checkout with Square POS. This site is built to run on Cloudflare with EmDash and Astro.
-		</p>
-		<div style="display:flex; gap:0.6rem; flex-wrap:wrap; margin-top:0.9rem;">
-			<a class="button button-primary" href="/services">Book Services</a>
-			<a class="button button-outline" href="/shop">Shop Products</a>
-			<a class="button button-outline" href="/posts">Style Journal</a>
+	<!-- Full-bleed dark hero -->
+	<section class="home-hero full-bleed">
+		<div class="site-shell">
+			<p class="eyebrow">Dapper Blokes Hair</p>
+			<h1 class="hero-headline">The cut that<br /><em>makes</em> the man.</h1>
+			<p class="hero-sub">
+				Precision cuts, classic shaves, and premium styling — booked your way.
+			</p>
+			<div class="hero-ctas">
+				<a class="button button-primary" href="/services">Book a Service</a>
+				<a class="button button-outline" href="/shop">Shop Products</a>
+				<a class="button button-text-link" href="/posts">Style Journal &rarr;</a>
+			</div>
+			<div class="hero-trust">
+				<span>Precision Cuts</span>
+				<span class="trust-sep">&middot;</span>
+				<span>Beard Shaping</span>
+				<span class="trust-sep">&middot;</span>
+				<span>Premium Products</span>
+				<span class="trust-sep">&middot;</span>
+				<span>Easy Online Booking</span>
+			</div>
 		</div>
 	</section>
 
-	<section style="margin-bottom:1rem;">
-		<div style="display:flex; justify-content:space-between; align-items:end; gap:1rem;">
-			<h2 style="margin:0;">Popular Services</h2>
-			<a href="/services">View all services</a>
+	<!-- Services section -->
+	<section class="page-section">
+		<div class="section-header">
+			<div>
+				<p class="eyebrow">What We Do</p>
+				<h2>Popular Services</h2>
+			</div>
+			<a href="/services" class="view-all">View all services</a>
 		</div>
-		<div class="grid grid-3" style="margin-top:0.8rem;">
-			{services.slice(0, 3).map((service) => (
-				<article class="card">
-					<h3 style="margin-top:0;">{service.data.title}</h3>
-					<p>{service.data.summary}</p>
-					<p class="price">{toCurrency(service.data.price_cents)}</p>
-					<p style="margin-top:0.2rem; color:var(--muted);">
-						{service.data.duration_minutes ? `${service.data.duration_minutes} min` : "Duration on request"}
-					</p>
-				</article>
-			))}
-		</div>
+		{services.length === 0 ? (
+			<p style="color:var(--muted);">Services coming soon — check back shortly.</p>
+		) : (
+			<div class="grid grid-3">
+				{services.slice(0, 3).map((service) => (
+					<article class="service-card">
+						<h3>{service.data.title}</h3>
+						{service.data.summary && <p>{service.data.summary}</p>}
+						<div class="service-meta">
+							<span class="price">{toCurrency(service.data.price_cents)}</span>
+							{service.data.duration_minutes && (
+								<span class="duration">{service.data.duration_minutes} min</span>
+							)}
+						</div>
+					</article>
+				))}
+			</div>
+		)}
 	</section>
 
-	<section>
-		<div style="display:flex; justify-content:space-between; align-items:end; gap:1rem;">
-			<h2 style="margin:0;">Featured Products</h2>
-			<a href="/shop">Visit store</a>
+	<hr class="ruled" />
+
+	<!-- Products section -->
+	<section class="page-section">
+		<div class="section-header">
+			<div>
+				<p class="eyebrow">In the Shop</p>
+				<h2>Featured Products</h2>
+			</div>
+			<a href="/shop" class="view-all">Visit the store</a>
 		</div>
-		<div class="grid grid-3" style="margin-top:0.8rem;">
-			{products.slice(0, 3).map((product) => (
-				<article class="card">
-					<h3 style="margin-top:0;">{product.data.title}</h3>
-					<p>{product.data.description}</p>
-					<p class="price">{toCurrency(product.data.price_cents)}</p>
-					<p style="color:var(--muted); margin-top:0.3rem;">
-						{product.data.in_stock ? "In stock" : "Out of stock"}
-					</p>
-				</article>
-			))}
-		</div>
+		{products.length === 0 ? (
+			<p style="color:var(--muted);">Products coming soon — check back shortly.</p>
+		) : (
+			<div class="grid grid-3">
+				{products.slice(0, 3).map((product) => (
+					<article class="product-card">
+						<div class="product-card-body">
+							<h3>{product.data.title}</h3>
+							{product.data.description && <p>{product.data.description}</p>}
+							<div class="product-card-footer">
+								<span class="price">{toCurrency(product.data.price_cents)}</span>
+								<span class={`stock-badge${product.data.in_stock ? "" : " out"}`}>
+									{product.data.in_stock ? "In stock" : "Out of stock"}
+								</span>
+							</div>
+						</div>
+					</article>
+				))}
+			</div>
+		)}
 	</section>
 </Base>
+
+<style>
+	/* ─── Hero ───────────────────────────────── */
+	.home-hero {
+		background: var(--bg-dark);
+		color: var(--text-inv);
+		padding: 5rem 0 4.5rem;
+		margin-bottom: 0;
+	}
+
+	.hero-headline {
+		font-size: clamp(3rem, 9vw, 6.5rem);
+		font-weight: 700;
+		line-height: 1.0;
+		color: var(--text-inv);
+		margin: 0.5rem 0 1.25rem;
+		max-width: 14ch;
+	}
+
+	.hero-headline em {
+		font-style: italic;
+		color: var(--accent);
+		font-weight: 300;
+	}
+
+	.hero-sub {
+		font-size: 1.0625rem;
+		color: var(--muted-inv);
+		max-width: 48ch;
+		line-height: 1.65;
+		margin-bottom: 2rem;
+	}
+
+	.hero-ctas {
+		display: flex;
+		gap: 0.75rem;
+		flex-wrap: wrap;
+		align-items: center;
+		margin-bottom: 3.5rem;
+	}
+
+	.button-text-link {
+		font-size: 0.875rem;
+		color: var(--muted-inv);
+		padding: 0.65rem 0.5rem;
+		transition: color 0.2s;
+	}
+
+	.button-text-link:hover {
+		color: var(--accent);
+		transform: none;
+	}
+
+	.hero-trust {
+		display: flex;
+		gap: 0.75rem;
+		flex-wrap: wrap;
+		align-items: center;
+		color: #5a5044;
+		font-size: 0.8rem;
+		letter-spacing: 0.08em;
+		text-transform: uppercase;
+		padding-top: 1.75rem;
+		border-top: 1px solid var(--line-dark);
+	}
+
+	.trust-sep {
+		color: var(--accent);
+	}
+
+	@media (max-width: 600px) {
+		.hero-headline {
+			font-size: clamp(2.5rem, 12vw, 4rem);
+		}
+
+		.hero-trust {
+			gap: 0.5rem;
+		}
+	}
+</style>

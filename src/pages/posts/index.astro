@@ -8,7 +8,6 @@ const { entries: posts, cacheHint } = await getEmDashCollection("posts", {
 });
 Astro.cache.set(cacheHint);
 
-// Fetch tags for each post
 const postsWithTags = await Promise.all(
 	posts.map(async (post) => {
 		const tags = await getEntryTerms("posts", post.data.id, "tag");
@@ -17,33 +16,80 @@ const postsWithTags = await Promise.all(
 );
 ---
 
-<Base title="All Posts">
-	<h1>Posts</h1>
+<Base title="Style Journal">
+	<!-- Full-bleed dark page header -->
+	<div class="page-hero full-bleed">
+		<div class="site-shell">
+			<p class="eyebrow">From the Chair</p>
+			<h1>Style Journal</h1>
+			<p>Grooming tips, style guides, and news from the barbershop floor.</p>
+		</div>
+	</div>
 
-	{
-		postsWithTags.length === 0 ? (
-			<p>No posts yet.</p>
+	<section class="page-section">
+		{postsWithTags.length === 0 ? (
+			<p style="color:var(--muted);">No posts yet — check back soon.</p>
 		) : (
-			<ul>
+			<ul class="post-list">
 				{postsWithTags.map(({ post, tags }) => (
-					<li>
-						<a href={`/posts/${post.id}`}>
+					<li class="post-list-item">
+						<a href={`/posts/${post.id}`} class="post-link">
 							{post.data.featured_image && (
-								<Image image={post.data.featured_image} />
+								<div class="post-thumb">
+									<Image image={post.data.featured_image} />
+								</div>
 							)}
-							<h2>{post.data.title}</h2>
-						</a>
-						{post.data.excerpt && <p>{post.data.excerpt}</p>}
-						{tags.length > 0 && (
-							<div>
-								{tags.map((t) => (
-									<a href={`/tag/${t.slug}`}>{t.label}</a>
-								))}
+							<div class="post-text">
+								<h2>{post.data.title}</h2>
+								{post.data.excerpt && <p>{post.data.excerpt}</p>}
+								{tags.length > 0 && (
+									<div class="post-tags">
+										{tags.map((t) => (
+											<a href={`/tag/${t.slug}`} class="post-tag">{t.label}</a>
+										))}
+									</div>
+								)}
 							</div>
-						)}
+						</a>
 					</li>
 				))}
 			</ul>
-		)
-	}
+		)}
+	</section>
 </Base>
+
+<style>
+	.post-link {
+		display: flex;
+		gap: 1.5rem;
+		align-items: flex-start;
+	}
+
+	.post-thumb {
+		flex-shrink: 0;
+		width: 100px;
+		height: 100px;
+		border-radius: var(--radius);
+		overflow: hidden;
+	}
+
+	.post-thumb img {
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+	}
+
+	.post-text {
+		flex: 1;
+	}
+
+	.post-tags {
+		margin-top: 0.5rem;
+	}
+
+	@media (max-width: 600px) {
+		.post-thumb {
+			display: none;
+		}
+	}
+</style>

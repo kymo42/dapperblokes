@@ -30,26 +30,143 @@ const toCurrency = (cents: number | null | undefined) =>
 ---
 
 <Base title={seo.title} description={seo.description} canonical={seo.canonical}>
-	<section class="card" style="margin-bottom:1rem;">
-		<h1 style="margin-top:0;">Services</h1>
-		<p style="color:var(--muted);">Pricing and service metadata can be synced to Square catalog references.</p>
+	<!-- Full-bleed dark page header -->
+	<div class="page-hero full-bleed">
+		<div class="site-shell">
+			<p class="eyebrow">What We Offer</p>
+			<h1>Our Services</h1>
+			<p>Every service is a craft. Book with confidence — no surprises on pricing.</p>
+		</div>
+	</div>
+
+	<!-- Services grid -->
+	<section class="page-section">
+		{services.length === 0 ? (
+			<p style="color:var(--muted);">Services coming soon — check back shortly.</p>
+		) : (
+			<div class="grid grid-2">
+				{services.map((service) => (
+					<article class="svc-card">
+						{service.data.featured_image && (
+							<div class="svc-img">
+								<Image image={service.data.featured_image} />
+							</div>
+						)}
+						<div class="svc-body">
+							<h2>{service.data.title}</h2>
+							{service.data.summary && <p class="svc-summary">{service.data.summary}</p>}
+							<div class="svc-meta">
+								<span class="price">{toCurrency(service.data.price_cents)}</span>
+								{service.data.duration_minutes && (
+									<span class="duration">{service.data.duration_minutes} min</span>
+								)}
+							</div>
+							{service.data.details && (
+								<div class="svc-details">
+									<PortableText value={service.data.details} />
+								</div>
+							)}
+						</div>
+					</article>
+				))}
+			</div>
+		)}
 	</section>
 
-	<div class="grid grid-2">
-		{services.map((service) => (
-			<article class="card">
-				{service.data.featured_image && <Image image={service.data.featured_image} />}
-				<h2>{service.data.title}</h2>
-				<p>{service.data.summary}</p>
-				<p class="price">{toCurrency(service.data.price_cents)}</p>
-				<p style="color:var(--muted);">
-					{service.data.duration_minutes ? `${service.data.duration_minutes} min` : "Duration on request"}
-				</p>
-				{service.data.details && <PortableText value={service.data.details} />}
-				{service.data.square_service_variation_id && (
-					<p><strong>Square Variation ID:</strong> {service.data.square_service_variation_id}</p>
-				)}
-			</article>
-		))}
+	<!-- CTA strip -->
+	<div class="book-strip full-bleed">
+		<div class="site-shell book-strip-inner">
+			<div>
+				<p class="eyebrow">Ready?</p>
+				<p class="book-strip-text">Book your next appointment online or give us a call.</p>
+			</div>
+			<a class="button button-primary" href="/contact">Get in Touch &rarr;</a>
+		</div>
 	</div>
 </Base>
+
+<style>
+	.svc-card {
+		background: var(--surface);
+		border: 1px solid var(--line);
+		border-radius: var(--radius-lg);
+		overflow: hidden;
+		box-shadow: var(--shadow);
+		animation: fade-up 0.4s ease both;
+		transition: box-shadow 0.25s ease, transform 0.25s ease;
+	}
+
+	.svc-card:hover {
+		box-shadow: var(--shadow-md);
+		transform: translateY(-3px);
+	}
+
+	.svc-img img {
+		width: 100%;
+		height: 220px;
+		object-fit: cover;
+	}
+
+	.svc-body {
+		padding: 1.75rem;
+		display: flex;
+		flex-direction: column;
+		gap: 0.5rem;
+	}
+
+	.svc-body h2 {
+		font-size: 1.35rem;
+		margin-bottom: 0.1rem;
+	}
+
+	.svc-summary {
+		color: var(--muted);
+		font-size: 0.9375rem;
+		line-height: 1.6;
+	}
+
+	.svc-meta {
+		display: flex;
+		align-items: baseline;
+		gap: 1rem;
+		padding-top: 0.75rem;
+		border-top: 1px solid var(--line);
+		margin-top: 0.25rem;
+	}
+
+	.svc-details {
+		color: var(--muted);
+		font-size: 0.9rem;
+		line-height: 1.65;
+		margin-top: 0.25rem;
+	}
+
+	.book-strip {
+		background: var(--bg-dark);
+		color: var(--text-inv);
+		margin-top: 4rem;
+	}
+
+	.book-strip-inner {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 2rem;
+		padding: 2.5rem 0;
+		flex-wrap: wrap;
+	}
+
+	.book-strip-text {
+		color: var(--muted-inv);
+		font-size: 1rem;
+		max-width: 44ch;
+		margin-top: 0.25rem;
+	}
+
+	@media (max-width: 700px) {
+		.book-strip-inner {
+			flex-direction: column;
+			align-items: flex-start;
+		}
+	}
+</style>
