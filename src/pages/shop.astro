@@ -13,28 +13,30 @@ const toCurrency = (cents: number | null | undefined) =>
 ---
 
 <Base title="Shop" description="Premium hair and grooming products at Dapper Blokes Hair">
-	<!-- Full-bleed dark page header -->
+	<!-- Dark page header -->
 	<div class="page-hero full-bleed">
 		<div class="site-shell">
-			<p class="eyebrow">The Shop</p>
+			<p class="eyebrow">The Shelf</p>
 			<h1>Premium Products</h1>
-			<p>Curated grooming essentials — the same products we use in the chair, available to take home.</p>
+			<p>What we use in the chair — available to take home. Curated, tested, trusted.</p>
 		</div>
 	</div>
 
-	<!-- Products grid -->
 	<section class="page-section">
 		{products.length === 0 ? (
-			<p style="color:var(--muted);">Products coming soon — check back shortly.</p>
+			<p style="color:var(--muted)">Products coming soon — check back shortly.</p>
 		) : (
 			<div class="grid grid-3">
-				{products.map((product) => (
-					<article class="product-card">
-						{product.data.featured_image && (
-							<div class="shop-img">
-								<Image image={product.data.featured_image} />
-							</div>
-						)}
+				{products.map((product, i) => (
+					<article class="product-card animate-up" style={`animation-delay:${i * 0.07}s`}>
+						{product.data.featured_image
+							? <div class="shop-img"><Image image={product.data.featured_image} /></div>
+							: <div class="shop-img-placeholder">
+									<svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" style="color:var(--line)">
+										<path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/>
+									</svg>
+								</div>
+						}
 						<div class="product-card-body">
 							<h3>{product.data.title}</h3>
 							{product.data.description && <p>{product.data.description}</p>}
@@ -45,9 +47,32 @@ const toCurrency = (cents: number | null | undefined) =>
 							)}
 							<div class="product-card-footer">
 								<span class="price">{toCurrency(product.data.price_cents)}</span>
-								<span class={`stock-badge${product.data.in_stock ? "" : " out"}`}>
-									{product.data.in_stock ? "In stock" : "Out of stock"}
-								</span>
+								<div class="product-actions">
+									<span class={`stock-badge${product.data.in_stock ? "" : " out"}`}>
+										{product.data.in_stock ? "In stock" : "Out of stock"}
+									</span>
+									{product.data.in_stock ? (
+										<div class="btn-group">
+											<button
+												class="btn-add-cart"
+												data-id={product.id}
+												data-title={product.data.title}
+												data-price={product.data.price_cents}
+												type="button"
+											>
+												Add to Cart
+											</button>
+											<a
+												href={`/checkout?id=${product.id}&title=${encodeURIComponent(product.data.title)}&price=${product.data.price_cents}`}
+												class="button-buy button"
+											>
+												Buy Now
+											</a>
+										</div>
+									) : (
+										<span class="out-of-stock-label">Unavailable</span>
+									)}
+								</div>
 							</div>
 						</div>
 					</article>
@@ -55,19 +80,198 @@ const toCurrency = (cents: number | null | undefined) =>
 			</div>
 		)}
 	</section>
+
+	<!-- Cart notification toast -->
+	<div id="cart-toast" class="cart-toast" aria-live="polite" aria-atomic="true">
+		<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+		<span id="cart-toast-msg">Added to cart</span>
+		<a href="/checkout" class="toast-checkout">Checkout →</a>
+	</div>
+
+	<!-- Square info banner -->
+	<div class="square-banner full-bleed">
+		<div class="site-shell square-banner-inner">
+			<div class="square-icon">
+				<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+					<rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/>
+				</svg>
+			</div>
+			<p>Secure checkout powered by <strong>Square</strong> — pay by card, Apple Pay, or Google Pay.</p>
+		</div>
+	</div>
 </Base>
 
 <style>
 	.shop-img img {
 		width: 100%;
-		height: 240px;
+		height: 260px;
 		object-fit: cover;
+		display: block;
+		transition: transform 0.4s ease;
+	}
+
+	.product-card:hover .shop-img img { transform: scale(1.04); }
+
+	.shop-img { overflow: hidden; }
+
+	.shop-img-placeholder {
+		height: 260px;
+		background: var(--bg-off);
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		border-bottom: 1px solid var(--line);
 	}
 
 	.product-details {
 		color: var(--muted);
-		font-size: 0.875rem;
+		font-size: 0.85rem;
 		line-height: 1.6;
-		margin-top: 0.25rem;
+		margin-top: 0.1rem;
+	}
+
+	.product-actions {
+		display: flex;
+		flex-direction: column;
+		align-items: flex-end;
+		gap: 0.5rem;
+	}
+
+	.btn-group {
+		display: flex;
+		gap: 0.4rem;
+	}
+
+	.btn-add-cart {
+		display: inline-flex;
+		align-items: center;
+		padding: 0.5rem 0.85rem;
+		border: 1px solid var(--line);
+		background: transparent;
+		color: var(--text);
+		border-radius: var(--radius);
+		font-family: "DM Sans", sans-serif;
+		font-size: 0.78rem;
+		font-weight: 500;
+		cursor: pointer;
+		transition: border-color 0.2s, background 0.2s;
+		white-space: nowrap;
+	}
+
+	.btn-add-cart:hover {
+		border-color: var(--text);
+		background: var(--bg-off);
+	}
+
+	.out-of-stock-label {
+		font-size: 0.78rem;
+		color: var(--muted);
+		font-style: italic;
+	}
+
+	/* Cart toast */
+	.cart-toast {
+		position: fixed;
+		bottom: 1.5rem;
+		right: 1.5rem;
+		background: var(--bg-dark);
+		color: var(--text-inv);
+		padding: 0.75rem 1rem;
+		border-radius: var(--radius-lg);
+		display: flex;
+		align-items: center;
+		gap: 0.6rem;
+		font-size: 0.875rem;
+		box-shadow: var(--shadow-lg);
+		transform: translateY(80px);
+		opacity: 0;
+		transition: transform 0.3s ease, opacity 0.3s ease;
+		z-index: 500;
+		max-width: 320px;
+	}
+
+	.cart-toast.visible {
+		transform: translateY(0);
+		opacity: 1;
+	}
+
+	.toast-checkout {
+		color: var(--accent-light);
+		font-weight: 600;
+		margin-left: 0.25rem;
+		white-space: nowrap;
+	}
+
+	/* Square banner */
+	.square-banner {
+		background: var(--bg-off);
+		border-top: 1px solid var(--line);
+		padding: 1rem 0;
+		margin-top: 3rem;
+	}
+
+	.square-banner-inner {
+		display: flex;
+		align-items: center;
+		gap: 0.75rem;
+	}
+
+	.square-icon {
+		color: var(--muted);
+		flex-shrink: 0;
+	}
+
+	.square-banner p {
+		font-size: 0.875rem;
+		color: var(--muted);
+	}
+
+	.square-banner strong { color: var(--text); font-weight: 500; }
+
+	@media (max-width: 600px) {
+		.btn-group { flex-direction: column; }
+		.product-actions { align-items: flex-start; }
 	}
 </style>
+
+<script>
+	// Add to cart logic
+	interface CartItem { id: string; title: string; price: number; qty: number; }
+
+	function getCart(): CartItem[] {
+		try { return JSON.parse(localStorage.getItem('db_cart') || '[]'); }
+		catch { return []; }
+	}
+
+	function saveCart(cart: CartItem[]) {
+		localStorage.setItem('db_cart', JSON.stringify(cart));
+		window.dispatchEvent(new Event('db-cart-updated'));
+	}
+
+	function addToCart(id: string, title: string, price: number) {
+		const cart = getCart();
+		const existing = cart.find(i => i.id === id);
+		if (existing) {
+			existing.qty += 1;
+		} else {
+			cart.push({ id, title, price, qty: 1 });
+		}
+		saveCart(cart);
+
+		// Show toast
+		const toast = document.getElementById('cart-toast');
+		const msg = document.getElementById('cart-toast-msg');
+		if (toast && msg) {
+			msg.textContent = `${title} added to cart`;
+			toast.classList.add('visible');
+			setTimeout(() => toast.classList.remove('visible'), 3000);
+		}
+	}
+
+	document.querySelectorAll<HTMLButtonElement>('.btn-add-cart').forEach(btn => {
+		btn.addEventListener('click', () => {
+			const { id, title, price } = btn.dataset;
+			if (id && title && price) addToCart(id, title, Number(price));
+		});
+	});
+</script>

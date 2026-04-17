@@ -11,18 +11,8 @@ Astro.cache.set(cacheHint);
 
 const { siteTitle } = resolveStarterSiteIdentity(await getSiteSettings());
 const seo = getSeoMeta(
-	{
-		id: "services",
-		data: {
-			title: "Services",
-			excerpt: "Explore signature hair services and pricing",
-		},
-	},
-	{
-		siteTitle,
-		siteUrl: Astro.url.origin,
-		path: "/services",
-	}
+	{ id: "services", data: { title: "Services", excerpt: "Precision cuts, beard shaping and classic barbering" } },
+	{ siteTitle, siteUrl: Astro.url.origin, path: "/services" },
 );
 
 const toCurrency = (cents: number | null | undefined) =>
@@ -30,42 +20,43 @@ const toCurrency = (cents: number | null | undefined) =>
 ---
 
 <Base title={seo.title} description={seo.description} canonical={seo.canonical}>
-	<!-- Full-bleed dark page header -->
+
 	<div class="page-hero full-bleed">
 		<div class="site-shell">
-			<p class="eyebrow">What We Offer</p>
+			<p class="eyebrow">The Menu</p>
 			<h1>Our Services</h1>
-			<p>Every service is a craft. Book with confidence — no surprises on pricing.</p>
+			<p>Every service starts with a conversation. We price honestly — no upsells, no surprises.</p>
 		</div>
 	</div>
 
-	<!-- Services grid -->
 	<section class="page-section">
 		{services.length === 0 ? (
-			<p style="color:var(--muted);">Services coming soon — check back shortly.</p>
+			<p style="color:var(--muted)">Services coming soon.</p>
 		) : (
-			<div class="grid grid-2">
-				{services.map((service) => (
-					<article class="svc-card">
-						{service.data.featured_image && (
-							<div class="svc-img">
-								<Image image={service.data.featured_image} />
-							</div>
-						)}
+			<div class="svc-grid">
+				{services.map((service, i) => (
+					<article class="svc-card animate-up" style={`animation-delay:${i * 0.08}s`}>
+						{service.data.featured_image
+							? <div class="svc-img"><Image image={service.data.featured_image} /></div>
+							: <div class="svc-img svc-img-dark">
+									<span class="svc-img-initial">{service.data.title.charAt(0)}</span>
+								</div>
+						}
 						<div class="svc-body">
 							<h2>{service.data.title}</h2>
 							{service.data.summary && <p class="svc-summary">{service.data.summary}</p>}
-							<div class="svc-meta">
-								<span class="price">{toCurrency(service.data.price_cents)}</span>
-								{service.data.duration_minutes && (
-									<span class="duration">{service.data.duration_minutes} min</span>
-								)}
-							</div>
 							{service.data.details && (
 								<div class="svc-details">
 									<PortableText value={service.data.details} />
 								</div>
 							)}
+							<div class="svc-meta">
+								<span class="price">{toCurrency(service.data.price_cents)}</span>
+								{service.data.duration_minutes && (
+									<span class="duration">{service.data.duration_minutes}&thinsp;min</span>
+								)}
+								<a href="/contact" class="svc-book">Book this →</a>
+							</div>
 						</div>
 					</article>
 				))}
@@ -73,38 +64,85 @@ const toCurrency = (cents: number | null | undefined) =>
 		)}
 	</section>
 
-	<!-- CTA strip -->
+	<!-- Included banner -->
+	<div class="included-band full-bleed">
+		<div class="site-shell included-inner">
+			<p class="included-title">Every service includes</p>
+			<div class="included-items">
+				<div class="included-item">
+					<span class="included-dot"></span>
+					Consultation
+				</div>
+				<div class="included-item">
+					<span class="included-dot"></span>
+					Wash &amp; condition
+				</div>
+				<div class="included-item">
+					<span class="included-dot"></span>
+					Finish styling
+				</div>
+				<div class="included-item">
+					<span class="included-dot"></span>
+					Product advice
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<!-- CTA -->
 	<div class="book-strip full-bleed">
 		<div class="site-shell book-strip-inner">
 			<div>
 				<p class="eyebrow">Ready?</p>
-				<p class="book-strip-text">Book your next appointment online or give us a call.</p>
+				<p class="book-strip-text">Walk-ins welcome. Book ahead to lock in your spot.</p>
 			</div>
-			<a class="button button-primary" href="/contact">Get in Touch &rarr;</a>
+			<a class="button button-dark" href="/contact">Contact Us &rarr;</a>
 		</div>
 	</div>
+
 </Base>
 
 <style>
+	.svc-grid {
+		display: grid;
+		grid-template-columns: repeat(2, 1fr);
+		gap: 1.5rem;
+	}
+
 	.svc-card {
 		background: var(--surface);
 		border: 1px solid var(--line);
 		border-radius: var(--radius-lg);
 		overflow: hidden;
 		box-shadow: var(--shadow);
-		animation: fade-up 0.4s ease both;
-		transition: box-shadow 0.25s ease, transform 0.25s ease;
+		transition: box-shadow 0.25s, transform 0.25s;
+		display: flex;
+		flex-direction: column;
 	}
 
-	.svc-card:hover {
-		box-shadow: var(--shadow-md);
-		transform: translateY(-3px);
-	}
+	.svc-card:hover { box-shadow: var(--shadow-md); transform: translateY(-2px); }
 
 	.svc-img img {
 		width: 100%;
-		height: 220px;
+		height: 200px;
 		object-fit: cover;
+		display: block;
+	}
+
+	.svc-img-dark {
+		height: 200px;
+		background: var(--bg-dark);
+		display: flex;
+		align-items: center;
+		justify-content: center;
+	}
+
+	.svc-img-initial {
+		font-family: "Fraunces", serif;
+		font-size: 4rem;
+		font-weight: 700;
+		color: var(--line-dark);
+		opacity: 0.4;
 	}
 
 	.svc-body {
@@ -112,35 +150,84 @@ const toCurrency = (cents: number | null | undefined) =>
 		display: flex;
 		flex-direction: column;
 		gap: 0.5rem;
+		flex: 1;
 	}
 
-	.svc-body h2 {
-		font-size: 1.35rem;
-		margin-bottom: 0.1rem;
-	}
+	.svc-body h2 { font-size: 1.35rem; }
 
-	.svc-summary {
-		color: var(--muted);
-		font-size: 0.9375rem;
-		line-height: 1.6;
-	}
+	.svc-summary { color: var(--muted); font-size: 0.9375rem; line-height: 1.6; }
+
+	.svc-details { color: var(--muted); font-size: 0.875rem; line-height: 1.65; }
 
 	.svc-meta {
 		display: flex;
-		align-items: baseline;
+		align-items: center;
 		gap: 1rem;
-		padding-top: 0.75rem;
+		padding-top: 1rem;
 		border-top: 1px solid var(--line);
-		margin-top: 0.25rem;
+		margin-top: auto;
+		flex-wrap: wrap;
 	}
 
-	.svc-details {
+	.svc-book {
+		margin-left: auto;
+		font-size: 0.8rem;
+		font-weight: 600;
+		letter-spacing: 0.05em;
+		color: var(--accent);
+		transition: color 0.2s;
+	}
+
+	.svc-book:hover { color: var(--accent-hover); }
+
+	/* Included band */
+	.included-band {
+		background: var(--bg-off);
+		border-top: 1px solid var(--line);
+		border-bottom: 1px solid var(--line);
+		padding: 2rem 0;
+		margin-top: 3rem;
+	}
+
+	.included-inner {
+		display: flex;
+		align-items: center;
+		gap: 2.5rem;
+		flex-wrap: wrap;
+	}
+
+	.included-title {
+		font-size: 0.72rem;
+		font-weight: 700;
+		letter-spacing: 0.16em;
+		text-transform: uppercase;
 		color: var(--muted);
-		font-size: 0.9rem;
-		line-height: 1.65;
-		margin-top: 0.25rem;
+		white-space: nowrap;
 	}
 
+	.included-items {
+		display: flex;
+		gap: 1.5rem;
+		flex-wrap: wrap;
+	}
+
+	.included-item {
+		display: flex;
+		align-items: center;
+		gap: 0.5rem;
+		font-size: 0.875rem;
+		color: var(--text);
+	}
+
+	.included-dot {
+		width: 5px;
+		height: 5px;
+		border-radius: 50%;
+		background: var(--accent);
+		flex-shrink: 0;
+	}
+
+	/* Book strip */
 	.book-strip {
 		background: var(--bg-dark);
 		color: var(--text-inv);
@@ -156,17 +243,11 @@ const toCurrency = (cents: number | null | undefined) =>
 		flex-wrap: wrap;
 	}
 
-	.book-strip-text {
-		color: var(--muted-inv);
-		font-size: 1rem;
-		max-width: 44ch;
-		margin-top: 0.25rem;
-	}
+	.book-strip-text { color: var(--muted-inv); font-size: 1rem; max-width: 44ch; margin-top: 0.2rem; }
 
 	@media (max-width: 700px) {
-		.book-strip-inner {
-			flex-direction: column;
-			align-items: flex-start;
-		}
+		.svc-grid { grid-template-columns: 1fr; }
+		.book-strip-inner { flex-direction: column; align-items: flex-start; }
+		.included-inner { flex-direction: column; align-items: flex-start; gap: 1rem; }
 	}
 </style>

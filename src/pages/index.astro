@@ -1,72 +1,98 @@
 ---
 import { getEmDashCollection, getSiteSettings } from "emdash";
+import { Image } from "emdash/ui";
 import Base from "../layouts/Base.astro";
 import { resolveStarterSiteIdentity } from "../utils/site-identity";
 
-const { entries: services, cacheHint: servicesHint } = await getEmDashCollection("services", {
-	orderBy: { title: "asc" },
-});
-const { entries: products, cacheHint: productsHint } = await getEmDashCollection("products", {
-	orderBy: { title: "asc" },
-});
-
+const { entries: services } = await getEmDashCollection("services", { orderBy: { title: "asc" } });
+const { entries: products, cacheHint } = await getEmDashCollection("products", { orderBy: { title: "asc" } });
 const { siteTitle, siteTagline } = resolveStarterSiteIdentity(await getSiteSettings());
-Astro.cache.set(servicesHint, productsHint);
+Astro.cache.set(cacheHint);
 
 const toCurrency = (cents: number | null | undefined) =>
 	new Intl.NumberFormat("en-AU", { style: "currency", currency: "AUD" }).format((cents ?? 0) / 100);
+
+// Curated barbershop images for Instagram grid
+// Replace these URLs with real @dapper_blokes_2038 images when available
+const instaGrid = [
+	{ src: "https://images.unsplash.com/photo-1503951914875-452162b0f3f1?w=600&h=600&fit=crop&q=85", alt: "Precision fade in progress" },
+	{ src: "https://images.unsplash.com/photo-1621605815971-fbc98d665033?w=600&h=600&fit=crop&q=85", alt: "The barbershop floor" },
+	{ src: "https://images.unsplash.com/photo-1585747860715-2ba37e788b70?w=600&h=600&fit=crop&q=85", alt: "Classic straight razor shave" },
+	{ src: "https://images.unsplash.com/photo-1634449571010-02389ed0f9b0?w=600&h=600&fit=crop&q=85", alt: "Premium grooming products" },
+	{ src: "https://images.unsplash.com/photo-1622286342621-4bd786c2447c?w=600&h=600&fit=crop&q=85", alt: "Detail work and beard line" },
+	{ src: "https://images.unsplash.com/photo-1604654894610-df63bc536371?w=600&h=600&fit=crop&q=85", alt: "Finished look, fresh out the chair" },
+];
 ---
 
 <Base title={siteTitle} description={siteTagline}>
-	<!-- Full-bleed dark hero -->
+
+	<!-- ═══ HERO ═══════════════════════════════════════════ -->
 	<section class="home-hero full-bleed">
-		<div class="site-shell">
-			<p class="eyebrow">Dapper Blokes Hair</p>
-			<h1 class="hero-headline">The cut that<br /><em>makes</em> the man.</h1>
-			<p class="hero-sub">
-				Precision cuts, classic shaves, and premium styling — booked your way.
-			</p>
-			<div class="hero-ctas">
-				<a class="button button-primary" href="/services">Book a Service</a>
-				<a class="button button-outline" href="/shop">Shop Products</a>
-				<a class="button button-text-link" href="/posts">Style Journal &rarr;</a>
+		<div class="hero-inner site-shell">
+			<div class="hero-text">
+				<p class="eyebrow">Dapper Blokes · Annandale</p>
+				<h1 class="hero-hed">
+					The craft<br />
+					of a <em>great</em><br />
+					haircut.
+				</h1>
+				<p class="hero-sub">Precision barbering, beard work, and premium grooming — Booth St, Annandale.</p>
+				<div class="hero-actions">
+					<a href="/services" class="button button-primary">View Services</a>
+					<a href="/shop" class="button button-outline">Shop Products</a>
+				</div>
 			</div>
-			<div class="hero-trust">
-				<span>Precision Cuts</span>
-				<span class="trust-sep">&middot;</span>
-				<span>Beard Shaping</span>
-				<span class="trust-sep">&middot;</span>
-				<span>Premium Products</span>
-				<span class="trust-sep">&middot;</span>
-				<span>Easy Online Booking</span>
+			<div class="hero-photo-wrap" aria-hidden="true">
+				<img
+					src="https://images.unsplash.com/photo-1503951914875-452162b0f3f1?w=960&h=1100&fit=crop&crop=entropy&q=90"
+					alt="Barber at work"
+					class="hero-photo"
+					fetchpriority="high"
+				/>
 			</div>
+		</div>
+		<div class="hero-strip site-shell">
+			<span>Precision Cuts</span>
+			<span class="dot">·</span>
+			<span>Beard Shaping</span>
+			<span class="dot">·</span>
+			<span>Premium Products</span>
+			<span class="dot">·</span>
+			<span>Annandale NSW</span>
 		</div>
 	</section>
 
-	<!-- Services section -->
+	<!-- ═══ SERVICES ════════════════════════════════════════ -->
 	<section class="page-section">
 		<div class="section-header">
 			<div>
 				<p class="eyebrow">What We Do</p>
-				<h2>Popular Services</h2>
+				<h2>Signature Services</h2>
 			</div>
-			<a href="/services" class="view-all">View all services</a>
+			<a href="/services" class="view-all">All services →</a>
 		</div>
 		{services.length === 0 ? (
-			<p style="color:var(--muted);">Services coming soon — check back shortly.</p>
+			<p style="color:var(--muted)">Services coming soon.</p>
 		) : (
-			<div class="grid grid-3">
-				{services.slice(0, 3).map((service) => (
-					<article class="service-card">
-						<h3>{service.data.title}</h3>
-						{service.data.summary && <p>{service.data.summary}</p>}
-						<div class="service-meta">
-							<span class="price">{toCurrency(service.data.price_cents)}</span>
-							{service.data.duration_minutes && (
-								<span class="duration">{service.data.duration_minutes} min</span>
-							)}
+			<div class="services-list">
+				{services.slice(0, 4).map((svc, i) => (
+					<a href="/services" class="svc-row animate-up" style={`animation-delay:${i * 0.06}s`}>
+						<div class="svc-row-info">
+							{svc.data.featured_image
+								? <div class="svc-thumb"><Image image={svc.data.featured_image} /></div>
+								: <div class="svc-thumb svc-thumb-placeholder"><span>{svc.data.title.charAt(0)}</span></div>
+							}
+							<div>
+								<h3>{svc.data.title}</h3>
+								{svc.data.summary && <p>{svc.data.summary}</p>}
+							</div>
 						</div>
-					</article>
+						<div class="svc-row-meta">
+							{svc.data.duration_minutes && <span class="svc-dur">{svc.data.duration_minutes} min</span>}
+							<span class="svc-price">{toCurrency(svc.data.price_cents)}</span>
+							<svg class="svc-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+						</div>
+					</a>
 				))}
 			</div>
 		)}
@@ -74,29 +100,91 @@ const toCurrency = (cents: number | null | undefined) =>
 
 	<hr class="ruled" />
 
-	<!-- Products section -->
+	<!-- ═══ PHILOSOPHY SPLIT ════════════════════════════════ -->
+	<section class="split-section page-section">
+		<div class="split-photo">
+			<img
+				src="https://images.unsplash.com/photo-1621605815971-fbc98d665033?w=800&h=900&fit=crop&q=85"
+				alt="Inside Dapper Blokes"
+				loading="lazy"
+			/>
+		</div>
+		<div class="split-text">
+			<p class="eyebrow">Our Craft</p>
+			<h2>Every cut is a conversation.</h2>
+			<p>We take the time to understand your hair, your style, and your life before we pick up the scissors. No rush, no cookie-cutter results — just clean, considered work from barbers who give a damn.</p>
+			<p style="margin-top:.75rem">Drop in or book ahead at 45 Booth St, Annandale. We're open six days a week.</p>
+			<a href="/contact" class="button button-dark" style="margin-top:1.75rem">Find Us</a>
+		</div>
+	</section>
+
+	<!-- ═══ INSTAGRAM GRID ══════════════════════════════════ -->
+	<section class="insta-section full-bleed">
+		<div class="site-shell">
+			<div class="insta-header">
+				<div>
+					<p class="eyebrow" style="color:var(--accent-light)">Fresh From The Chair</p>
+					<h2 style="color:var(--text-inv)">Follow <a href="https://www.instagram.com/dapper_blokes_2038" target="_blank" rel="noopener" class="insta-handle">@dapper_blokes_2038</a></h2>
+				</div>
+				<a href="https://www.instagram.com/dapper_blokes_2038" target="_blank" rel="noopener" class="button button-outline" style="flex-shrink:0">
+					Open Instagram
+				</a>
+			</div>
+		</div>
+		<div class="insta-grid">
+			{instaGrid.map((img, i) => (
+				<a
+					href="https://www.instagram.com/dapper_blokes_2038"
+					target="_blank"
+					rel="noopener"
+					class="insta-cell"
+					style={`animation-delay:${i * 0.07}s`}
+					aria-label={img.alt}
+				>
+					<img src={img.src} alt={img.alt} loading="lazy" />
+					<div class="insta-overlay">
+						<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor"/></svg>
+					</div>
+				</a>
+			))}
+		</div>
+	</section>
+
+	<!-- ═══ PRODUCTS ════════════════════════════════════════ -->
 	<section class="page-section">
 		<div class="section-header">
 			<div>
-				<p class="eyebrow">In the Shop</p>
-				<h2>Featured Products</h2>
+				<p class="eyebrow">In The Shop</p>
+				<h2>Take Home the Goods</h2>
 			</div>
-			<a href="/shop" class="view-all">Visit the store</a>
+			<a href="/shop" class="view-all">Full shop →</a>
 		</div>
 		{products.length === 0 ? (
-			<p style="color:var(--muted);">Products coming soon — check back shortly.</p>
+			<p style="color:var(--muted)">Products coming soon.</p>
 		) : (
 			<div class="grid grid-3">
-				{products.slice(0, 3).map((product) => (
-					<article class="product-card">
+				{products.slice(0, 3).map((product, i) => (
+					<article class="product-card animate-up" style={`animation-delay:${i * 0.07}s`}>
+						{product.data.featured_image
+							? <div class="product-img"><Image image={product.data.featured_image} /></div>
+							: <div class="product-img-placeholder"><span>{product.data.title.charAt(0)}</span></div>
+						}
 						<div class="product-card-body">
 							<h3>{product.data.title}</h3>
 							{product.data.description && <p>{product.data.description}</p>}
 							<div class="product-card-footer">
 								<span class="price">{toCurrency(product.data.price_cents)}</span>
-								<span class={`stock-badge${product.data.in_stock ? "" : " out"}`}>
-									{product.data.in_stock ? "In stock" : "Out of stock"}
-								</span>
+								<div style="display:flex;align-items:center;gap:.6rem">
+									<span class={`stock-badge${product.data.in_stock ? "" : " out"}`}>
+										{product.data.in_stock ? "In stock" : "Out of stock"}
+									</span>
+									{product.data.in_stock && (
+										<a
+											href={`/checkout?id=${product.id}&title=${encodeURIComponent(product.data.title)}&price=${product.data.price_cents}`}
+											class="button-buy button"
+										>Buy Now</a>
+									)}
+								</div>
 							</div>
 						</div>
 					</article>
@@ -104,84 +192,416 @@ const toCurrency = (cents: number | null | undefined) =>
 			</div>
 		)}
 	</section>
+
+	<!-- ═══ QUOTE BAND ══════════════════════════════════════ -->
+	<blockquote class="quote-band full-bleed">
+		<div class="site-shell">
+			<p class="quote-mark">"</p>
+			<p class="quote-text">Not just a haircut — it's an hour that's yours. Come in looking good, leave looking great.</p>
+			<cite>— Amin, Head Barber at Dapper Blokes</cite>
+		</div>
+	</blockquote>
+
+	<!-- ═══ BOOK CTA ═════════════════════════════════════════ -->
+	<div class="book-cta full-bleed">
+		<div class="site-shell book-cta-inner">
+			<div>
+				<p class="eyebrow" style="color:var(--accent)">Ready?</p>
+				<h2>Book your next appointment.</h2>
+				<p>Walk-ins welcome — booking ahead secures your time.</p>
+			</div>
+			<div class="book-cta-actions">
+				<a href="/contact" class="button button-dark">Get in Touch</a>
+				<a href="/services" class="button button-ghost">See Pricing</a>
+			</div>
+		</div>
+	</div>
+
 </Base>
 
 <style>
-	/* ─── Hero ───────────────────────────────── */
+	/* ─── Hero ──────────────────────────────── */
 	.home-hero {
 		background: var(--bg-dark);
 		color: var(--text-inv);
-		padding: 5rem 0 4.5rem;
-		margin-bottom: 0;
+		overflow: hidden;
 	}
 
-	.hero-headline {
-		font-size: clamp(3rem, 9vw, 6.5rem);
+	.hero-inner {
+		display: grid;
+		grid-template-columns: 1fr 1fr;
+		min-height: 88vh;
+		align-items: center;
+		gap: 0;
+		position: relative;
+	}
+
+	.hero-text {
+		padding: 5rem 4rem 5rem 0;
+		position: relative;
+		z-index: 2;
+	}
+
+	.hero-hed {
+		font-size: clamp(3.5rem, 7vw, 6.5rem);
 		font-weight: 700;
-		line-height: 1.0;
+		line-height: 0.95;
 		color: var(--text-inv);
-		margin: 0.5rem 0 1.25rem;
-		max-width: 14ch;
+		margin: 0.6rem 0 1.25rem;
 	}
 
-	.hero-headline em {
+	.hero-hed em {
 		font-style: italic;
-		color: var(--accent);
 		font-weight: 300;
+		color: var(--accent-light);
 	}
 
 	.hero-sub {
-		font-size: 1.0625rem;
+		font-size: 1rem;
 		color: var(--muted-inv);
-		max-width: 48ch;
+		max-width: 40ch;
 		line-height: 1.65;
 		margin-bottom: 2rem;
 	}
 
-	.hero-ctas {
+	.hero-actions {
 		display: flex;
 		gap: 0.75rem;
 		flex-wrap: wrap;
-		align-items: center;
-		margin-bottom: 3.5rem;
 	}
 
-	.button-text-link {
-		font-size: 0.875rem;
-		color: var(--muted-inv);
-		padding: 0.65rem 0.5rem;
-		transition: color 0.2s;
+	.hero-photo-wrap {
+		position: relative;
+		height: 88vh;
+		overflow: hidden;
 	}
 
-	.button-text-link:hover {
-		color: var(--accent);
-		transform: none;
+	.hero-photo-wrap::before {
+		content: "";
+		position: absolute;
+		inset: 0 auto 0 0;
+		width: 200px;
+		background: linear-gradient(to right, var(--bg-dark), transparent);
+		z-index: 1;
 	}
 
-	.hero-trust {
+	.hero-photo {
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+		object-position: center top;
+		display: block;
+	}
+
+	.hero-strip {
 		display: flex;
-		gap: 0.75rem;
-		flex-wrap: wrap;
+		gap: 0.9rem;
 		align-items: center;
-		color: #5a5044;
-		font-size: 0.8rem;
-		letter-spacing: 0.08em;
-		text-transform: uppercase;
-		padding-top: 1.75rem;
+		flex-wrap: wrap;
+		padding: 1rem 0;
 		border-top: 1px solid var(--line-dark);
+		font-size: 0.72rem;
+		font-weight: 600;
+		letter-spacing: 0.15em;
+		text-transform: uppercase;
+		color: #4a4238;
 	}
 
-	.trust-sep {
+	.hero-strip .dot { color: var(--accent); }
+
+	/* ─── Services list ─────────────────────── */
+	.services-list {
+		display: flex;
+		flex-direction: column;
+		gap: 0;
+	}
+
+	.svc-row {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 1.5rem;
+		padding: 1.25rem 0;
+		border-bottom: 1px solid var(--line);
+		transition: background 0.15s;
+		border-radius: var(--radius);
+		cursor: pointer;
+	}
+
+	.svc-row:first-child { border-top: 1px solid var(--line); }
+
+	.svc-row:hover { color: var(--accent); }
+
+	.svc-row-info {
+		display: flex;
+		align-items: center;
+		gap: 1rem;
+		flex: 1;
+		min-width: 0;
+	}
+
+	.svc-thumb {
+		width: 52px;
+		height: 52px;
+		border-radius: var(--radius);
+		overflow: hidden;
+		flex-shrink: 0;
+	}
+
+	.svc-thumb img { width: 100%; height: 100%; object-fit: cover; }
+
+	.svc-thumb-placeholder {
+		background: var(--bg-off);
+		border: 1px solid var(--line);
+		display: flex;
+		align-items: center;
+		justify-content: center;
+	}
+
+	.svc-thumb-placeholder span {
+		font-family: "Fraunces", serif;
+		font-size: 1.2rem;
+		font-weight: 600;
+		color: var(--muted);
+	}
+
+	.svc-row-info h3 {
+		font-size: 1.05rem;
+		margin-bottom: 0.15rem;
+		font-weight: 600;
+	}
+
+	.svc-row-info p {
+		font-size: 0.85rem;
+		color: var(--muted);
+		line-height: 1.4;
+		white-space: nowrap;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		max-width: 40ch;
+	}
+
+	.svc-row-meta {
+		display: flex;
+		align-items: center;
+		gap: 1rem;
+		flex-shrink: 0;
+	}
+
+	.svc-dur {
+		font-size: 0.8rem;
+		color: var(--muted);
+	}
+
+	.svc-price {
+		font-family: "Fraunces", serif;
+		font-size: 1.15rem;
+		font-weight: 600;
+	}
+
+	.svc-arrow {
+		color: var(--muted);
+		flex-shrink: 0;
+		transition: transform 0.2s, color 0.2s;
+	}
+
+	.svc-row:hover .svc-arrow { transform: translateX(3px); color: var(--accent); }
+
+	/* ─── Philosophy split ──────────────────── */
+	.split-section {
+		display: grid;
+		grid-template-columns: 1fr 1fr;
+		gap: 5rem;
+		align-items: center;
+	}
+
+	.split-photo {
+		border-radius: var(--radius-lg);
+		overflow: hidden;
+		aspect-ratio: 4/5;
+	}
+
+	.split-photo img {
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+	}
+
+	.split-text h2 {
+		font-size: clamp(1.8rem, 3.5vw, 2.75rem);
+		margin: 0.5rem 0 1rem;
+		line-height: 1.1;
+	}
+
+	.split-text p {
+		color: var(--muted);
+		font-size: 0.9375rem;
+		line-height: 1.7;
+	}
+
+	/* ─── Instagram grid ────────────────────── */
+	.insta-section {
+		background: var(--bg-dark);
+		padding: 4rem 0 0;
+		margin-top: 4rem;
+	}
+
+	.insta-header {
+		display: flex;
+		justify-content: space-between;
+		align-items: flex-end;
+		gap: 1.5rem;
+		padding-bottom: 2rem;
+		flex-wrap: wrap;
+	}
+
+	.insta-handle {
+		color: var(--accent-light);
+		text-decoration: underline;
+		text-underline-offset: 4px;
+		text-decoration-color: rgba(232,176,48,.35);
+		transition: text-decoration-color 0.2s;
+	}
+
+	.insta-handle:hover { text-decoration-color: var(--accent-light); }
+
+	.insta-grid {
+		display: grid;
+		grid-template-columns: repeat(6, 1fr);
+		gap: 2px;
+	}
+
+	.insta-cell {
+		aspect-ratio: 1;
+		overflow: hidden;
+		position: relative;
+		display: block;
+	}
+
+	.insta-cell img {
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+		transition: transform 0.4s ease, filter 0.4s ease;
+		filter: saturate(0.85) brightness(0.95);
+	}
+
+	.insta-cell:hover img {
+		transform: scale(1.06);
+		filter: saturate(1.05) brightness(1);
+	}
+
+	.insta-overlay {
+		position: absolute;
+		inset: 0;
+		background: rgba(11,9,7,0.55);
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		color: white;
+		opacity: 0;
+		transition: opacity 0.3s;
+	}
+
+	.insta-cell:hover .insta-overlay { opacity: 1; }
+
+	/* ─── Product image placeholder ─────────── */
+	.product-img img { width: 100%; height: 220px; object-fit: cover; }
+
+	.product-img-placeholder {
+		height: 220px;
+		background: var(--bg-off);
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		border-bottom: 1px solid var(--line);
+	}
+
+	.product-img-placeholder span {
+		font-family: "Fraunces", serif;
+		font-size: 3rem;
+		font-weight: 600;
+		color: var(--line);
+	}
+
+	/* ─── Quote band ────────────────────────── */
+	.quote-band {
+		background: var(--bg-off);
+		border-top: 1px solid var(--line);
+		border-bottom: 1px solid var(--line);
+		padding: 4rem 0;
+		text-align: center;
+		margin-top: 4rem;
+	}
+
+	.quote-mark {
+		font-family: "Fraunces", serif;
+		font-size: 5rem;
+		line-height: 0.5;
+		color: var(--line);
+		margin-bottom: 1rem;
+		font-weight: 300;
+	}
+
+	.quote-text {
+		font-family: "Fraunces", serif;
+		font-size: clamp(1.25rem, 2.5vw, 1.75rem);
+		font-style: italic;
+		font-weight: 300;
+		max-width: 56ch;
+		margin: 0 auto 1rem;
+		line-height: 1.45;
+		color: var(--text);
+	}
+
+	.quote-band cite {
+		font-size: 0.8rem;
+		font-weight: 600;
+		letter-spacing: 0.12em;
+		text-transform: uppercase;
 		color: var(--accent);
+	}
+
+	/* ─── Book CTA ──────────────────────────── */
+	.book-cta {
+		background: var(--bg-off);
+		border-top: 1px solid var(--line);
+		padding: 4rem 0;
+	}
+
+	.book-cta-inner {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 2rem;
+		flex-wrap: wrap;
+	}
+
+	.book-cta h2 {
+		font-size: clamp(1.5rem, 3vw, 2.25rem);
+		margin: 0.35rem 0 0.5rem;
+	}
+
+	.book-cta p { color: var(--muted); font-size: 0.9375rem; }
+
+	.book-cta-actions { display: flex; gap: 0.75rem; flex-wrap: wrap; }
+
+	/* ─── Responsive ────────────────────────── */
+	@media (max-width: 900px) {
+		.hero-inner { grid-template-columns: 1fr; min-height: auto; }
+		.hero-photo-wrap { display: none; }
+		.hero-text { padding: 4rem 0 2.5rem; }
+
+		.split-section { grid-template-columns: 1fr; }
+		.split-photo { aspect-ratio: 16/9; }
+
+		.insta-grid { grid-template-columns: repeat(3, 1fr); }
 	}
 
 	@media (max-width: 600px) {
-		.hero-headline {
-			font-size: clamp(2.5rem, 12vw, 4rem);
-		}
-
-		.hero-trust {
-			gap: 0.5rem;
-		}
+		.svc-row-info p { display: none; }
+		.svc-thumb { display: none; }
+		.insta-grid { grid-template-columns: repeat(2, 1fr); }
+		.book-cta-inner { flex-direction: column; align-items: flex-start; }
 	}
 </style>
