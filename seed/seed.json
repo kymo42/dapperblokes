@@ -9,7 +9,7 @@
 
 	"settings": {
 		"title": "Dapper Blokes Hair",
-		"tagline": "Precision cuts, premium products, and easy booking"
+		"tagline": "Classic barbering with a modern touch. 45 Booth St, Annandale NSW."
 	},
 
 	"collections": [
@@ -170,7 +170,9 @@
 			"collections": ["posts"],
 			"terms": [
 				{ "slug": "style-guides", "label": "Style Guides" },
-				{ "slug": "shop-updates", "label": "Shop Updates" }
+				{ "slug": "shop-updates", "label": "Shop Updates" },
+				{ "slug": "barber-spotlight", "label": "Barber Spotlight" },
+				{ "slug": "from-the-chair", "label": "From the Chair" }
 			]
 		},
 		{
@@ -181,7 +183,11 @@
 			"collections": ["posts"],
 			"terms": [
 				{ "slug": "haircare", "label": "Haircare" },
-				{ "slug": "mens-style", "label": "Mens Style" }
+				{ "slug": "mens-style", "label": "Mens Style" },
+				{ "slug": "fades", "label": "Fades" },
+				{ "slug": "curls", "label": "Curls" },
+				{ "slug": "beard", "label": "Beard" },
+				{ "slug": "gift-vouchers", "label": "Gift Vouchers" }
 			]
 		}
 	],
@@ -236,7 +242,7 @@
 							"children": [
 								{
 									"_type": "span",
-									"text": "Visit Dapper Blokes Hair for premium cuts and styling. For appointments, use the booking button on the homepage."
+									"text": "We're at 45 Booth St, Annandale NSW 2038. Open Mon–Fri 9am–5:30pm and Saturday 8am–4pm. Closed Sundays. Pop in or book ahead — we'd love to see you in the chair."
 								}
 							]
 						}
@@ -364,6 +370,416 @@
 				"taxonomies": {
 					"category": ["style-guides"],
 					"tag": ["mens-style", "haircare"]
+				}
+			},
+			{
+				"id": "not-every-cut-is-a-fade",
+				"slug": "not-every-cut-is-a-fade",
+				"status": "published",
+				"data": {
+					"title": "Not Every Cut is a Fade",
+					"excerpt": "We love working with length just as much — shaping, layering, and bringing curls back to life.",
+					"content": [
+						{
+							"_type": "block",
+							"style": "normal",
+							"children": [
+								{
+									"_type": "span",
+									"text": "Fades get a lot of attention — and rightfully so. A clean fade is a thing of beauty. But at Dapper Blokes, we love working with length just as much. Shaping, layering, and bringing curls back to life is equally rewarding craft."
+								}
+							]
+						},
+						{
+							"_type": "block",
+							"style": "h2",
+							"children": [
+								{
+									"_type": "span",
+									"text": "Working With What You've Got"
+								}
+							]
+						},
+						{
+							"_type": "block",
+							"style": "normal",
+							"children": [
+								{
+									"_type": "span",
+									"text": "A lot of clients come in wanting their length tamed rather than taken off. Whether it's waves that have lost their shape, curls that need encouragement, or layers that have grown out unevenly — the goal is always the same: restore the intention of the style."
+								}
+							]
+						},
+						{
+							"_type": "block",
+							"style": "normal",
+							"children": [
+								{
+									"_type": "span",
+									"text": "This kind of work requires patience and a real eye for how hair moves. You're not just cutting — you're sculpting around the natural growth pattern to get a result that looks effortless but holds up day after day."
+								}
+							]
+						},
+						{
+							"_type": "block",
+							"style": "h2",
+							"children": [
+								{
+									"_type": "span",
+									"text": "Curls Are a Collaboration"
+								}
+							]
+						},
+						{
+							"_type": "block",
+							"style": "normal",
+							"children": [
+								{
+									"_type": "span",
+									"text": "Curly hair is one of our favourites to work with. When you cut curls properly — removing weight in the right places, shaping the perimeter, letting the curl pattern do its thing — the result is a fresh look and a big smile to match."
+								}
+							]
+						},
+						{
+							"_type": "block",
+							"style": "normal",
+							"children": [
+								{
+									"_type": "span",
+									"text": "The key is knowing when to take length off and when to leave it alone. Not every curl needs the same treatment. We take the time to understand your hair before we make a single cut."
+								}
+							]
+						},
+						{
+							"_type": "block",
+							"style": "h2",
+							"children": [
+								{
+									"_type": "span",
+									"text": "Classic Barbering With a Modern Touch"
+								}
+							]
+						},
+						{
+							"_type": "block",
+							"style": "normal",
+							"children": [
+								{
+									"_type": "span",
+									"text": "That's the Dapper Blokes approach. Whether you're after a razor-sharp fade or just want your length shaped up and refreshed, you'll leave the chair looking and feeling exactly how you should — like yourself, just better."
+								}
+							]
+						}
+					]
+				},
+				"taxonomies": {
+					"category": ["style-guides"],
+					"tag": ["mens-style", "curls", "haircare"]
+				}
+			},
+			{
+				"id": "meet-amin",
+				"slug": "meet-amin",
+				"status": "published",
+				"data": {
+					"title": "Meet Amin: The Man Behind the Chair",
+					"excerpt": "With over 15 years in the game, Amin is a master of his craft — and barbering isn't just a job to him, it's an art form.",
+					"content": [
+						{
+							"_type": "block",
+							"style": "normal",
+							"children": [
+								{
+									"_type": "span",
+									"text": "If you've sat in Amin's chair, you already know. There's a stillness to the way he works — no wasted movements, no second-guessing. Just precision, focus, and a genuine love for the craft."
+								}
+							]
+						},
+						{
+							"_type": "block",
+							"style": "h2",
+							"children": [
+								{
+									"_type": "span",
+									"text": "15 Years in the Game"
+								}
+							]
+						},
+						{
+							"_type": "block",
+							"style": "normal",
+							"children": [
+								{
+									"_type": "span",
+									"text": "Amin has been barbering for over 15 years. In that time, he's cut thousands of heads, refined his technique across fades, scissor cuts, beard work and everything in between, and built a loyal following of clients who simply won't go anywhere else."
+								}
+							]
+						},
+						{
+							"_type": "block",
+							"style": "normal",
+							"children": [
+								{
+									"_type": "span",
+									"text": "His approach is rooted in the classics — clean lines, precise blending, a respect for the fundamentals — but adapted to the modern client who wants a cut that looks sharp on day one and grows out gracefully."
+								}
+							]
+						},
+						{
+							"_type": "block",
+							"style": "h2",
+							"children": [
+								{
+									"_type": "span",
+									"text": "Barbering as an Art Form"
+								}
+							]
+						},
+						{
+							"_type": "block",
+							"style": "normal",
+							"children": [
+								{
+									"_type": "span",
+									"text": "For Amin, barbering isn't just a job — it's an art form. He brings passion, precision, and pride to every cut. No shortcuts. No rushing. Every client gets his full attention from the moment they sit down."
+								}
+							]
+						},
+						{
+							"_type": "block",
+							"style": "normal",
+							"children": [
+								{
+									"_type": "span",
+									"text": "He's a perfectionist in the best possible sense — the kind of barber who'll spend an extra few minutes on a line to make sure it's exactly right, because he knows that's the difference between a good cut and a great one."
+								}
+							]
+						},
+						{
+							"_type": "block",
+							"style": "h2",
+							"children": [
+								{
+									"_type": "span",
+									"text": "Come In and See for Yourself"
+								}
+							]
+						},
+						{
+							"_type": "block",
+							"style": "normal",
+							"children": [
+								{
+									"_type": "span",
+									"text": "Amin is based at Dapper Blokes, 45 Booth St, Annandale. Book in and experience the difference that 15 years of dedication looks like."
+								}
+							]
+						}
+					]
+				},
+				"taxonomies": {
+					"category": ["barber-spotlight"],
+					"tag": ["mens-style", "fades"]
+				}
+			},
+			{
+				"id": "the-art-of-the-blend",
+				"slug": "the-art-of-the-blend",
+				"status": "published",
+				"data": {
+					"title": "The Art of the Blend",
+					"excerpt": "Crisp around the edges, flawless through the blend — here's what separates a good fade from a great one.",
+					"content": [
+						{
+							"_type": "block",
+							"style": "normal",
+							"children": [
+								{
+									"_type": "span",
+									"text": "Anyone can cut hair short. Getting the blend right — that seamless graduation from skin to length, from tight to full — is where the real skill lives. At Dapper Blokes, it's one of the things we take most seriously."
+								}
+							]
+						},
+						{
+							"_type": "block",
+							"style": "h2",
+							"children": [
+								{
+									"_type": "span",
+									"text": "What Makes a Fade Work"
+								}
+							]
+						},
+						{
+							"_type": "block",
+							"style": "normal",
+							"children": [
+								{
+									"_type": "span",
+									"text": "A great fade is clean from every angle. Not just the front-on mirror shot — but walking away, turning to the side, catching it in different lighting. That consistency only comes from understanding how to blend multiple guard lengths together without leaving harsh lines or steps in the graduation."
+								}
+							]
+						},
+						{
+							"_type": "block",
+							"style": "normal",
+							"children": [
+								{
+									"_type": "span",
+									"text": "It's a process. You build up the fade in passes, checking from multiple angles, using the clippers and scissors in combination. The texture of the hair matters. The natural growth pattern matters. No two fades are exactly the same, which is why it takes real experience to do it consistently well."
+								}
+							]
+						},
+						{
+							"_type": "block",
+							"style": "h2",
+							"children": [
+								{
+									"_type": "span",
+									"text": "Scissor Cuts Over the Comb"
+								}
+							]
+						},
+						{
+							"_type": "block",
+							"style": "normal",
+							"children": [
+								{
+									"_type": "span",
+									"text": "Not every blend involves clippers. A scissor cut done well — tight to the comb on the sides, graduating naturally into the top — can produce one of the most elegant results in barbering. The subtle blend is often the standout result."
+								}
+							]
+						},
+						{
+							"_type": "block",
+							"style": "normal",
+							"children": [
+								{
+									"_type": "span",
+									"text": "This approach suits clients who prefer to keep length, or who want a softer, more European finish rather than the high-contrast look of a skin fade. It's classic barbering — and it never goes out of style."
+								}
+							]
+						},
+						{
+							"_type": "block",
+							"style": "h2",
+							"children": [
+								{
+									"_type": "span",
+									"text": "The Finishing Touch"
+								}
+							]
+						},
+						{
+							"_type": "block",
+							"style": "normal",
+							"children": [
+								{
+									"_type": "span",
+									"text": "The edges tie everything together. Clean lines around the temples, sideburns, and neckline are the finishing detail that makes a cut look intentional and sharp. We don't rush this step. Crisp around the edges, flawless through the blend — that's the standard we hold every cut to."
+								}
+							]
+						}
+					]
+				},
+				"taxonomies": {
+					"category": ["style-guides", "from-the-chair"],
+					"tag": ["fades", "mens-style"]
+				}
+			},
+			{
+				"id": "gift-the-experience",
+				"slug": "gift-the-experience",
+				"status": "published",
+				"data": {
+					"title": "Gift the Experience",
+					"excerpt": "Give someone the gift of style and self-care with a Dapper Blokes gift voucher — available in-store now.",
+					"content": [
+						{
+							"_type": "block",
+							"style": "normal",
+							"children": [
+								{
+									"_type": "span",
+									"text": "Some gifts are forgettable. A Dapper Blokes gift voucher isn't one of them. Whether it's a precision cut, a beard shape and detail, or the full experience from start to finish — it's the kind of gift that actually gets used, and appreciated."
+								}
+							]
+						},
+						{
+							"_type": "block",
+							"style": "h2",
+							"children": [
+								{
+									"_type": "span",
+									"text": "More Than a Haircut"
+								}
+							]
+						},
+						{
+							"_type": "block",
+							"style": "normal",
+							"children": [
+								{
+									"_type": "span",
+									"text": "A visit to Dapper Blokes is as much about the experience as the result. It's a chance to sit down, switch off, and leave looking — and feeling — like yourself again. For a lot of blokes, regular time in the chair is genuinely one of the better parts of their week."
+								}
+							]
+						},
+						{
+							"_type": "block",
+							"style": "normal",
+							"children": [
+								{
+									"_type": "span",
+									"text": "That's what you're giving when you hand over a voucher. Not just a haircut — an experience worth looking forward to."
+								}
+							]
+						},
+						{
+							"_type": "block",
+							"style": "h2",
+							"children": [
+								{
+									"_type": "span",
+									"text": "Perfect For Any Occasion"
+								}
+							]
+						},
+						{
+							"_type": "block",
+							"style": "normal",
+							"children": [
+								{
+									"_type": "span",
+									"text": "Birthdays, Father's Day, or just because — a gift voucher works for any occasion and fits any budget. We offer vouchers across all our services, so the recipient can choose what suits them most when they come in."
+								}
+							]
+						},
+						{
+							"_type": "block",
+							"style": "h2",
+							"children": [
+								{
+									"_type": "span",
+									"text": "Pick One Up In-Store"
+								}
+							]
+						},
+						{
+							"_type": "block",
+							"style": "normal",
+							"children": [
+								{
+									"_type": "span",
+									"text": "Gift vouchers are available in-store at 45 Booth St, Annandale. Pop in during opening hours — Mon–Fri 9am to 5:30pm, Saturday 8am to 4pm — and we'll sort you out."
+								}
+							]
+						}
+					]
+				},
+				"taxonomies": {
+					"category": ["shop-updates"],
+					"tag": ["gift-vouchers", "mens-style"]
 				}
 			}
 		]
