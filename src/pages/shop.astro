@@ -29,16 +29,18 @@ const toCurrency = (cents: number | null | undefined) =>
 			<div class="grid grid-3">
 				{products.map((product, i) => (
 					<article class="product-card animate-up" style={`animation-delay:${i * 0.07}s`}>
-						{product.data.featured_image
-							? <div class="shop-img"><Image image={product.data.featured_image} /></div>
-							: <div class="shop-img-placeholder">
-									<svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" style="color:var(--line)">
-										<path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/>
-									</svg>
-								</div>
-						}
+						<a href={`/products/${product.id}`} class="product-img-link" tabindex="-1" aria-hidden="true">
+							{product.data.featured_image
+								? <div class="shop-img"><Image image={product.data.featured_image} /></div>
+								: <div class="shop-img-placeholder">
+										<svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" style="color:var(--line)">
+											<path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/>
+										</svg>
+									</div>
+							}
+						</a>
 						<div class="product-card-body">
-							<h3>{product.data.title}</h3>
+							<h3><a href={`/products/${product.id}`} class="product-title-link">{product.data.title}</a></h3>
 							{product.data.description && <p>{product.data.description}</p>}
 							{product.data.details && (
 								<div class="product-details">
@@ -112,7 +114,10 @@ const toCurrency = (cents: number | null | undefined) =>
 
 	.product-card:hover .shop-img img { transform: scale(1.04); }
 
+	.product-img-link { display: block; }
 	.shop-img { overflow: hidden; }
+	.product-title-link { color: inherit; }
+	.product-title-link:hover { color: var(--accent); }
 
 	.shop-img-placeholder {
 		height: 260px;

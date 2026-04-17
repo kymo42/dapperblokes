@@ -1,34 +1,30 @@
 ---
 import { getEmDashEntry, getEntryTerms, getSeoMeta, decodeSlug, getSiteSettings } from "emdash";
-import { Image, PortableText, WidgetArea } from "emdash/ui";
+import { Image, PortableText } from "emdash/ui";
 import Base from "../../layouts/Base.astro";
 import { resolveStarterSiteIdentity } from "../../utils/site-identity";
 
 const slug = decodeSlug(Astro.params.slug);
-
-if (!slug) {
-	return Astro.redirect("/404");
-}
+if (!slug) return Astro.redirect("/404");
 
 const { entry: post, cacheHint } = await getEmDashEntry("posts", slug);
-
-if (!post) {
-	return Astro.redirect("/404");
-}
+if (!post) return Astro.redirect("/404");
 
 Astro.cache.set(cacheHint);
 const { siteTitle } = resolveStarterSiteIdentity(await getSiteSettings());
 
-// SEO meta from content fields
 const seo = getSeoMeta(post, {
 	siteTitle,
 	siteUrl: Astro.url.origin,
 	path: `/posts/${slug}`,
 });
 
-// Taxonomy terms for this post (use post.data.id, not post.id)
-const tags = await getEntryTerms("posts", post.data.id, "tag");
+const tags       = await getEntryTerms("posts", post.data.id, "tag");
 const categories = await getEntryTerms("posts", post.data.id, "category");
+
+const publishedDate = post.data.publishedAt
+	? new Date(post.data.publishedAt).toLocaleDateString("en-AU", { year: "numeric", month: "long", day: "numeric" })
+	: null;
 ---
 
 <Base
@@ -39,53 +35,249 @@ const categories = await getEntryTerms("posts", post.data.id, "category");
 	image={seo.ogImage}
 	content={{ collection: "posts", id: post.data.id, slug }}
 >
-	<article>
-		{
-			post.data.featured_image && (
-				<div {...post.edit.featured_image}>
-					<Image image={post.data.featured_image} />
-				</div>
-			)
-		}
+	<!-- Post hero -->
+	<div class="post-hero full-bleed">
+		<div class="site-shell post-hero-inner">
+			<!-- Breadcrumb & categories -->
+			<div class="post-meta-top">
+				<a href="/posts" class="post-back">
+					<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+					Style Journal
+				</a>
+				{categories.length > 0 && (
+					<div class="post-cats">
+						{categories.map((c) => (
+							<a href={`/category/${c.slug}`} class="post-cat">{c.label}</a>
+						))}
+					</div>
+				)}
+			</div>
 
-		<h1 {...post.edit.title}>{post.data.title}</h1>
+			<h1 class="post-hero-title" {...post.edit?.title}>{post.data.title}</h1>
 
-		{
-			post.data.publishedAt && (
-				<time datetime={post.data.publishedAt.toISOString()}>
-					{post.data.publishedAt.toLocaleDateString("en-US", {
-						year: "numeric",
-						month: "long",
-						day: "numeric",
-					})}
+			{post.data.excerpt && (
+				<p class="post-hero-excerpt">{post.data.excerpt}</p>
+			)}
+
+			{publishedDate && (
+				<time class="post-hero-date" datetime={post.data.publishedAt?.toISOString?.() ?? ""}>
+					{publishedDate}
 				</time>
-			)
-		}
+			)}
+		</div>
+	</div>
 
-		{
-			categories.length > 0 && (
-				<div>
-					{categories.map((c) => (
-						<a href={`/category/${c.slug}`}>{c.label}</a>
-					))}
-				</div>
-			)
-		}
+	<!-- Featured image -->
+	{post.data.featured_image && (
+		<div class="post-featured-img full-bleed" {...post.edit?.featured_image}>
+			<Image image={post.data.featured_image} />
+		</div>
+	)}
 
-		<PortableText value={post.data.content} />
+	<!-- Body -->
+	<div class="post-body-wrap">
+		<article class="post-prose" {...post.edit?.content}>
+			<PortableText value={post.data.content} />
+		</article>
 
-		{
-			tags.length > 0 && (
-				<div>
-					{tags.map((t) => (
-						<a href={`/tag/${t.slug}`}>{t.label}</a>
-					))}
-				</div>
-			)
-		}
-	</article>
+		<!-- Tags -->
+		{tags.length > 0 && (
+			<div class="post-tags-footer">
+				<span class="tags-label">Tagged:</span>
+				{tags.map((t) => (
+					<a href={`/tag/${t.slug}`} class="post-tag">{t.label}</a>
+				))}
+			</div>
+		)}
 
-	<aside>
-		<WidgetArea name="sidebar" />
-	</aside>
+		<!-- Back link -->
+		<div class="post-footer-nav">
+			<a href="/posts" class="button button-ghost">← Back to Journal</a>
+		</div>
+	</div>
 </Base>
+
+<style>
+	/* ─── Hero ──────────────────────────────── */
+	.post-hero {
+		background: var(--bg-dark);
+		color: var(--text-inv);
+		padding: 3rem 0 3.5rem;
+	}
+
+	.post-hero-inner { max-width: 720px; }
+
+	.post-meta-top {
+		display: flex;
+		align-items: center;
+		gap: 1rem;
+		margin-bottom: 1.5rem;
+		flex-wrap: wrap;
+	}
+
+	.post-back {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.35rem;
+		font-size: 0.78rem;
+		font-weight: 600;
+		letter-spacing: 0.1em;
+		text-transform: uppercase;
+		color: var(--muted-inv);
+		transition: color 0.2s;
+	}
+
+	.post-back:hover { color: var(--accent-light); }
+
+	.post-cats { display: flex; gap: 0.4rem; flex-wrap: wrap; }
+
+	.post-cat {
+		display: inline-block;
+		padding: 0.15rem 0.6rem;
+		border: 1px solid var(--line-dark);
+		border-radius: 3px;
+		font-size: 0.68rem;
+		font-weight: 600;
+		letter-spacing: 0.1em;
+		text-transform: uppercase;
+		color: var(--accent-light);
+		transition: border-color 0.2s;
+	}
+
+	.post-cat:hover { border-color: var(--accent-light); }
+
+	.post-hero-title {
+		font-size: clamp(2rem, 5vw, 3.5rem);
+		color: var(--text-inv);
+		line-height: 1.05;
+		margin-bottom: 1rem;
+	}
+
+	.post-hero-excerpt {
+		font-size: 1.05rem;
+		color: var(--muted-inv);
+		line-height: 1.65;
+		max-width: 56ch;
+		margin-bottom: 1.25rem;
+		font-style: italic;
+	}
+
+	.post-hero-date {
+		display: block;
+		font-size: 0.78rem;
+		font-weight: 500;
+		letter-spacing: 0.1em;
+		text-transform: uppercase;
+		color: #4a4035;
+	}
+
+	/* ─── Featured image ─────────────────────── */
+	.post-featured-img {
+		max-height: 520px;
+		overflow: hidden;
+		background: var(--bg-off);
+	}
+
+	.post-featured-img img {
+		width: 100%;
+		max-height: 520px;
+		object-fit: cover;
+		display: block;
+	}
+
+	/* ─── Body ───────────────────────────────── */
+	.post-body-wrap {
+		max-width: 720px;
+		padding: 3.5rem 0 2rem;
+	}
+
+	/* Prose styles for PortableText output */
+	.post-prose { font-size: 1.0625rem; line-height: 1.8; color: var(--text); }
+
+	.post-prose :global(p) { margin-bottom: 1.4em; }
+
+	.post-prose :global(h2) {
+		font-size: clamp(1.4rem, 2.5vw, 1.85rem);
+		margin: 2.25em 0 0.6em;
+		color: var(--text);
+	}
+
+	.post-prose :global(h3) {
+		font-size: 1.2rem;
+		margin: 2em 0 0.5em;
+		color: var(--text);
+	}
+
+	.post-prose :global(ul),
+	.post-prose :global(ol) {
+		padding-left: 1.4em;
+		margin-bottom: 1.4em;
+	}
+
+	.post-prose :global(li) { margin-bottom: 0.45em; }
+
+	.post-prose :global(a) {
+		color: var(--accent);
+		text-decoration: underline;
+		text-underline-offset: 3px;
+		text-decoration-color: rgba(200, 145, 12, 0.4);
+		transition: text-decoration-color 0.2s;
+	}
+
+	.post-prose :global(a:hover) { text-decoration-color: var(--accent); }
+
+	.post-prose :global(blockquote) {
+		border-left: 3px solid var(--accent);
+		margin: 1.75em 0;
+		padding: 0.5em 0 0.5em 1.5em;
+		font-style: italic;
+		color: var(--muted);
+		font-size: 1.05em;
+	}
+
+	.post-prose :global(strong) { font-weight: 600; color: var(--text); }
+
+	.post-prose :global(em) { font-style: italic; }
+
+	.post-prose :global(hr) {
+		border: none;
+		border-top: 1px solid var(--line);
+		margin: 2.5em 0;
+	}
+
+	.post-prose :global(img) {
+		border-radius: var(--radius-lg);
+		margin: 1.5em 0;
+		width: 100%;
+	}
+
+	.post-prose :global(code) {
+		background: var(--bg-off);
+		padding: 0.15em 0.4em;
+		border-radius: 3px;
+		font-size: 0.9em;
+	}
+
+	/* ─── Tags footer ────────────────────────── */
+	.post-tags-footer {
+		display: flex;
+		align-items: center;
+		gap: 0.4rem;
+		flex-wrap: wrap;
+		padding: 1.75rem 0 1.5rem;
+		border-top: 1px solid var(--line);
+		margin-top: 2.5rem;
+	}
+
+	.tags-label {
+		font-size: 0.72rem;
+		font-weight: 700;
+		letter-spacing: 0.1em;
+		text-transform: uppercase;
+		color: var(--muted);
+		margin-right: 0.25rem;
+	}
+
+	/* ─── Footer nav ─────────────────────────── */
+	.post-footer-nav { padding: 0.5rem 0 2rem; }
+</style>

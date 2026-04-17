@@ -165,12 +165,14 @@ const instaGrid = [
 			<div class="grid grid-3">
 				{products.slice(0, 3).map((product, i) => (
 					<article class="product-card animate-up" style={`animation-delay:${i * 0.07}s`}>
-						{product.data.featured_image
-							? <div class="product-img"><Image image={product.data.featured_image} /></div>
-							: <div class="product-img-placeholder"><span>{product.data.title.charAt(0)}</span></div>
-						}
+						<a href={`/products/${product.id}`} tabindex="-1" aria-hidden="true">
+							{product.data.featured_image
+								? <div class="product-img"><Image image={product.data.featured_image} /></div>
+								: <div class="product-img-placeholder"><span>{product.data.title.charAt(0)}</span></div>
+							}
+						</a>
 						<div class="product-card-body">
-							<h3>{product.data.title}</h3>
+							<h3><a href={`/products/${product.id}`} style="color:inherit">{product.data.title}</a></h3>
 							{product.data.description && <p>{product.data.description}</p>}
 							<div class="product-card-footer">
 								<span class="price">{toCurrency(product.data.price_cents)}</span>
