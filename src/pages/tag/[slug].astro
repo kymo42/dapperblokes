@@ -6,40 +6,119 @@ import Base from "../../layouts/Base.astro";
 const slug = decodeSlug(Astro.params.slug);
 const term = slug ? await getTerm("tag", slug) : null;
 
-if (!term) {
-	return Astro.redirect("/404");
-}
+if (!term) return Astro.redirect("/404");
 
-const { entries: posts } = await getEmDashCollection("posts", {
+const { entries: posts, cacheHint } = await getEmDashCollection("posts", {
 	where: { tag: term.slug },
 	orderBy: { published_at: "desc" },
 });
+if (cacheHint) Astro.cache.set(cacheHint);
 ---
 
-<Base
-	title={`Posts tagged "${term.label}"`}
-	description={`Posts tagged ${term.label}`}
->
-	<h1>Tag: {term.label}</h1>
-	<p>{posts.length} {posts.length === 1 ? "post" : "posts"}</p>
+<Base title={`Posts tagged "${term.label}" — Style Journal`} description={`All posts tagged ${term.label}`}>
 
-	{
-		posts.length === 0 ? (
-			<p>No posts with this tag yet.</p>
+	<div class="page-hero full-bleed">
+		<div class="site-shell">
+			<a href="/posts" class="hero-back">← Style Journal</a>
+			<p class="eyebrow" style="margin-top:.75rem">Tagged</p>
+			<h1>{term.label}</h1>
+			<p>{posts.length} {posts.length === 1 ? "article" : "articles"}</p>
+		</div>
+	</div>
+
+	<section class="page-section">
+		{posts.length === 0 ? (
+			<div style="text-align:center;padding:3rem 0;color:var(--muted)">
+				<p>No posts with this tag yet.</p>
+				<a href="/posts" class="button button-ghost" style="margin-top:1rem">Browse all posts</a>
+			</div>
 		) : (
-			<ul>
-				{posts.map((post) => (
-					<li>
-						<a href={`/posts/${post.id}`}>
-							{post.data.featured_image && (
-								<Image image={post.data.featured_image} />
-							)}
-							<h2>{post.data.title}</h2>
-						</a>
-						{post.data.excerpt && <p>{post.data.excerpt}</p>}
-					</li>
+			<div class="tag-grid">
+				{posts.map((post, i) => (
+					<a href={`/posts/${post.id}`} class="post-card animate-up" style={`animation-delay:${i * 0.06}s`}>
+						<div class="post-card-img">
+							{post.data.featured_image
+								? <Image image={post.data.featured_image} />
+								: <div class="post-img-placeholder"><span>{post.data.title.charAt(0)}</span></div>
+							}
+						</div>
+						<div class="post-card-body">
+							<h2 class="post-card-title">{post.data.title}</h2>
+							{post.data.excerpt && <p class="post-card-excerpt">{post.data.excerpt}</p>}
+							<span class="post-read-more">Read article →</span>
+						</div>
+					</a>
 				))}
-			</ul>
-		)
-	}
+			</div>
+		)}
+	</section>
 </Base>
+
+<style>
+	.hero-back {
+		font-size: 0.78rem;
+		font-weight: 600;
+		letter-spacing: 0.1em;
+		text-transform: uppercase;
+		color: var(--muted-inv);
+		transition: color 0.2s;
+	}
+	.hero-back:hover { color: var(--accent-light); }
+
+	.tag-grid {
+		display: grid;
+		grid-template-columns: repeat(3, 1fr);
+		gap: 1.5rem;
+	}
+
+	.post-card {
+		display: flex;
+		flex-direction: column;
+		background: var(--surface);
+		border: 1px solid var(--line);
+		border-radius: var(--radius-lg);
+		overflow: hidden;
+		box-shadow: var(--shadow);
+		transition: box-shadow 0.25s, transform 0.25s;
+		color: inherit;
+		text-decoration: none;
+	}
+
+	.post-card:hover { box-shadow: var(--shadow-md); transform: translateY(-3px); }
+	.post-card:hover .post-card-title { color: var(--accent); }
+
+	.post-card-img { height: 180px; overflow: hidden; }
+	.post-card-img img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform 0.4s; }
+	.post-card:hover .post-card-img img { transform: scale(1.04); }
+
+	.post-img-placeholder {
+		width: 100%; height: 100%;
+		background: var(--bg-dark);
+		display: flex; align-items: center; justify-content: center;
+	}
+	.post-img-placeholder span {
+		font-family: "Fraunces", serif;
+		font-size: 3rem; font-weight: 700;
+		color: var(--line-dark); opacity: 0.4;
+	}
+
+	.post-card-body {
+		padding: 1.1rem 1.25rem 1.25rem;
+		display: flex; flex-direction: column; gap: 0.4rem; flex: 1;
+	}
+
+	.post-card-title { font-size: 1.05rem; line-height: 1.2; color: var(--text); transition: color 0.2s; }
+
+	.post-card-excerpt {
+		font-size: 0.85rem; color: var(--muted); line-height: 1.55;
+		display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+	}
+
+	.post-read-more {
+		margin-top: auto; padding-top: 0.6rem;
+		font-size: 0.78rem; font-weight: 600; color: var(--accent);
+	}
+
+	@media (max-width: 900px) { .tag-grid { grid-template-columns: repeat(2, 1fr); } }
+	@media (max-width: 600px) { .tag-grid { grid-template-columns: 1fr; } }
+</style>

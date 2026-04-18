@@ -28,7 +28,7 @@ const toCurrency = (cents: number | null | undefined) =>
 
 const price = product.data.price_cents ?? 0;
 const inStock = product.data.in_stock ?? false;
-const checkoutUrl = `/checkout?id=${product.id}&title=${encodeURIComponent(product.data.title)}&price=${price}`;
+const checkoutUrl = `/shop/checkout?id=${product.id}&title=${encodeURIComponent(product.data.title)}&price=${price}`;
 ---
 
 <Base

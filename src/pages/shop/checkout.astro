@@ -1,7 +1,7 @@
 ---
 export const prerender = false;
 
-import Base from "../layouts/Base.astro";
+import Base from "../../layouts/Base.astro";
 
 // Read Square config from Cloudflare env
 const env = (Astro.locals as { runtime?: { env?: Record<string, string> } }).runtime?.env ?? {};

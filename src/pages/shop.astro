@@ -65,7 +65,7 @@ const toCurrency = (cents: number | null | undefined) =>
 												Add to Cart
 											</button>
 											<a
-												href={`/checkout?id=${product.id}&title=${encodeURIComponent(product.data.title)}&price=${product.data.price_cents}`}
+												href={`/shop/checkout?id=${product.id}&title=${encodeURIComponent(product.data.title)}&price=${product.data.price_cents}`}
 												class="button-buy button"
 											>
 												Buy Now
@@ -87,7 +87,7 @@ const toCurrency = (cents: number | null | undefined) =>
 	<div id="cart-toast" class="cart-toast" aria-live="polite" aria-atomic="true">
 		<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
 		<span id="cart-toast-msg">Added to cart</span>
-		<a href="/checkout" class="toast-checkout">Checkout →</a>
+		<a href="/shop/checkout" class="toast-checkout">Checkout →</a>
 	</div>
 
 	<!-- Square info banner -->

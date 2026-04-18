@@ -8,16 +8,24 @@ const { entries: posts, cacheHint } = await getEmDashCollection("posts", {
 });
 Astro.cache.set(cacheHint);
 
-const postsWithTags = await Promise.all(
+const postsWithMeta = await Promise.all(
 	posts.map(async (post) => {
 		const tags = await getEntryTerms("posts", post.data.id, "tag");
-		return { post, tags };
+		const categories = await getEntryTerms("posts", post.data.id, "category");
+		return { post, tags, categories };
 	})
 );
+
+const publishedDate = (raw: unknown) => {
+	if (!raw) return null;
+	try {
+		return new Date(raw as string).toLocaleDateString("en-AU", { year: "numeric", month: "short", day: "numeric" });
+	} catch { return null; }
+};
 ---
 
-<Base title="Style Journal">
-	<!-- Full-bleed dark page header -->
+<Base title="Style Journal — Dapper Blokes Hair" description="Grooming tips, style guides and news from the barbershop floor.">
+
 	<div class="page-hero full-bleed">
 		<div class="site-shell">
 			<p class="eyebrow">From the Chair</p>
@@ -27,69 +35,285 @@ const postsWithTags = await Promise.all(
 	</div>
 
 	<section class="page-section">
-		{postsWithTags.length === 0 ? (
-			<p style="color:var(--muted);">No posts yet — check back soon.</p>
+		{postsWithMeta.length === 0 ? (
+			<div class="empty-state">
+				<p>No posts yet — check back soon.</p>
+				<a href="/" class="button button-ghost" style="margin-top:1rem">Back to Home</a>
+			</div>
 		) : (
-			<ul class="post-list">
-				{postsWithTags.map(({ post, tags }) => (
-					<li class="post-list-item">
-						<a href={`/posts/${post.id}`} class="post-link">
-							{post.data.featured_image && (
-								<div class="post-thumb">
-									<Image image={post.data.featured_image} />
+			<div class="post-grid">
+				{/* Featured first post — full width */}
+				{postsWithMeta.length > 0 && (() => {
+					const { post, tags, categories } = postsWithMeta[0];
+					return (
+						<a href={`/posts/${post.id}`} class="post-card post-card-featured">
+							<div class="post-card-img">
+								{post.data.featured_image
+									? <Image image={post.data.featured_image} />
+									: <div class="post-img-placeholder post-img-placeholder-lg">
+											<span>{post.data.title.charAt(0)}</span>
+										</div>
+								}
+							</div>
+							<div class="post-card-body">
+								{categories.length > 0 && (
+									<span class="post-cat-label">{categories[0].label}</span>
+								)}
+								<h2 class="post-card-title">{post.data.title}</h2>
+								{post.data.excerpt && <p class="post-card-excerpt">{post.data.excerpt}</p>}
+								<div class="post-card-footer">
+									{publishedDate(post.data.publishedAt) && (
+										<span class="post-date">{publishedDate(post.data.publishedAt)}</span>
+									)}
+									{tags.length > 0 && (
+										<div class="post-tag-list">
+											{tags.slice(0, 3).map(t => (
+												<span class="post-tag-pill">{t.label}</span>
+											))}
+										</div>
+									)}
+									<span class="post-read-more">Read article →</span>
 								</div>
+							</div>
+						</a>
+					);
+				})()}
+
+				{/* Remaining posts — grid */}
+				{postsWithMeta.slice(1).map(({ post, tags, categories }, i) => (
+					<a href={`/posts/${post.id}`} class="post-card animate-up" style={`animation-delay:${i * 0.06}s`}>
+						<div class="post-card-img">
+							{post.data.featured_image
+								? <Image image={post.data.featured_image} />
+								: <div class="post-img-placeholder">
+										<span>{post.data.title.charAt(0)}</span>
+									</div>
+							}
+						</div>
+						<div class="post-card-body">
+							{categories.length > 0 && (
+								<span class="post-cat-label">{categories[0].label}</span>
 							)}
-							<div class="post-text">
-								<h2>{post.data.title}</h2>
-								{post.data.excerpt && <p>{post.data.excerpt}</p>}
+							<h2 class="post-card-title">{post.data.title}</h2>
+							{post.data.excerpt && <p class="post-card-excerpt">{post.data.excerpt}</p>}
+							<div class="post-card-footer">
+								{publishedDate(post.data.publishedAt) && (
+									<span class="post-date">{publishedDate(post.data.publishedAt)}</span>
+								)}
 								{tags.length > 0 && (
-									<div class="post-tags">
-										{tags.map((t) => (
-											<a href={`/tag/${t.slug}`} class="post-tag">{t.label}</a>
+									<div class="post-tag-list">
+										{tags.slice(0, 2).map(t => (
+											<span class="post-tag-pill">{t.label}</span>
 										))}
 									</div>
 								)}
+								<span class="post-read-more">Read →</span>
 							</div>
-						</a>
-					</li>
+						</div>
+					</a>
 				))}
-			</ul>
+			</div>
 		)}
 	</section>
 </Base>
 
 <style>
-	.post-link {
-		display: flex;
+	.empty-state {
+		text-align: center;
+		padding: 4rem 0;
+		color: var(--muted);
+	}
+
+	/* ─── Post grid ─────────────────────────── */
+	.post-grid {
+		display: grid;
+		grid-template-columns: repeat(3, 1fr);
 		gap: 1.5rem;
-		align-items: flex-start;
 	}
 
-	.post-thumb {
-		flex-shrink: 0;
-		width: 100px;
-		height: 100px;
-		border-radius: var(--radius);
+	/* Featured card spans full width */
+	.post-card-featured {
+		grid-column: 1 / -1;
+		display: grid !important;
+		grid-template-columns: 1fr 1fr;
+		min-height: 360px;
+	}
+
+	.post-card-featured .post-card-img {
+		height: 100%;
+		min-height: 300px;
+	}
+
+	.post-card-featured .post-card-img img,
+	.post-card-featured .post-img-placeholder-lg {
+		height: 100%;
+		min-height: 300px;
+	}
+
+	.post-card-featured .post-card-title {
+		font-size: clamp(1.4rem, 2.5vw, 2rem);
+	}
+
+	.post-card-featured .post-card-excerpt {
+		display: block !important; /* always show excerpt on featured */
+		-webkit-line-clamp: unset;
+	}
+
+	/* Regular card */
+	.post-card {
+		display: flex;
+		flex-direction: column;
+		background: var(--surface);
+		border: 1px solid var(--line);
+		border-radius: var(--radius-lg);
 		overflow: hidden;
+		box-shadow: var(--shadow);
+		transition: box-shadow 0.25s, transform 0.25s;
+		color: inherit;
+		text-decoration: none;
 	}
 
-	.post-thumb img {
+	.post-card:hover {
+		box-shadow: var(--shadow-md);
+		transform: translateY(-3px);
+	}
+
+	.post-card:hover .post-card-title { color: var(--accent); }
+
+	/* Image */
+	.post-card-img {
+		overflow: hidden;
+		height: 200px;
+		flex-shrink: 0;
+	}
+
+	.post-card-img img {
 		width: 100%;
 		height: 100%;
 		object-fit: cover;
+		display: block;
+		transition: transform 0.4s ease;
 	}
 
-	.post-text {
+	.post-card:hover .post-card-img img { transform: scale(1.04); }
+
+	.post-img-placeholder {
+		width: 100%;
+		height: 100%;
+		background: var(--bg-dark);
+		display: flex;
+		align-items: center;
+		justify-content: center;
+	}
+
+	.post-img-placeholder span {
+		font-family: "Fraunces", serif;
+		font-size: 3.5rem;
+		font-weight: 700;
+		color: var(--line-dark);
+		opacity: 0.4;
+	}
+
+	/* Body */
+	.post-card-body {
+		padding: 1.25rem 1.4rem 1.4rem;
+		display: flex;
+		flex-direction: column;
+		gap: 0.5rem;
 		flex: 1;
 	}
 
-	.post-tags {
-		margin-top: 0.5rem;
+	.post-cat-label {
+		display: inline-block;
+		font-size: 0.68rem;
+		font-weight: 700;
+		letter-spacing: 0.14em;
+		text-transform: uppercase;
+		color: var(--accent);
+	}
+
+	.post-card-title {
+		font-size: 1.1rem;
+		line-height: 1.2;
+		color: var(--text);
+		transition: color 0.2s;
+		margin: 0;
+	}
+
+	.post-card-excerpt {
+		font-size: 0.875rem;
+		color: var(--muted);
+		line-height: 1.6;
+		margin: 0;
+		/* 2-line clamp on small cards */
+		display: -webkit-box;
+		-webkit-line-clamp: 2;
+		-webkit-box-orient: vertical;
+		overflow: hidden;
+	}
+
+	/* Footer row */
+	.post-card-footer {
+		display: flex;
+		align-items: center;
+		gap: 0.6rem;
+		flex-wrap: wrap;
+		margin-top: auto;
+		padding-top: 0.75rem;
+		border-top: 1px solid var(--line);
+	}
+
+	.post-date {
+		font-size: 0.72rem;
+		color: var(--muted);
+		font-weight: 400;
+		white-space: nowrap;
+	}
+
+	.post-tag-list {
+		display: flex;
+		gap: 0.3rem;
+		flex-wrap: wrap;
+		flex: 1;
+	}
+
+	/* Tags as non-clickable labels (not links — avoid confusing navigation) */
+	.post-tag-pill {
+		display: inline-block;
+		padding: 0.1rem 0.45rem;
+		border-radius: 3px;
+		font-size: 0.65rem;
+		font-weight: 600;
+		letter-spacing: 0.08em;
+		text-transform: uppercase;
+		background: var(--bg-off);
+		color: var(--muted);
+		border: 1px solid var(--line);
+	}
+
+	.post-read-more {
+		margin-left: auto;
+		font-size: 0.78rem;
+		font-weight: 600;
+		color: var(--accent);
+		white-space: nowrap;
+		flex-shrink: 0;
+	}
+
+	/* ─── Responsive ─────────────────────────── */
+	@media (max-width: 900px) {
+		.post-grid { grid-template-columns: repeat(2, 1fr); }
+		.post-card-featured {
+			grid-column: 1 / -1;
+			grid-template-columns: 1fr;
+		}
+		.post-card-featured .post-card-img { height: 240px; min-height: 240px; }
+		.post-card-featured .post-card-img img,
+		.post-card-featured .post-img-placeholder-lg { min-height: 240px; }
 	}
 
 	@media (max-width: 600px) {
-		.post-thumb {
-			display: none;
-		}
+		.post-grid { grid-template-columns: 1fr; }
+		.post-card-featured { grid-template-columns: 1fr; }
 	}
 </style>
