@@ -12,598 +12,1591 @@ Astro.cache.set(cacheHint);
 const toCurrency = (cents: number | null | undefined) =>
 	new Intl.NumberFormat("en-AU", { style: "currency", currency: "AUD" }).format((cents ?? 0) / 100);
 
-// Curated barbershop images for Instagram grid
-// Replace these URLs with real @dapper_blokes_2038 images when available
-const instaGrid = [
-	{ src: "https://images.unsplash.com/photo-1503951914875-452162b0f3f1?w=600&h=600&fit=crop&q=85", alt: "Precision fade in progress" },
-	{ src: "https://images.unsplash.com/photo-1621605815971-fbc98d665033?w=600&h=600&fit=crop&q=85", alt: "The barbershop floor" },
-	{ src: "https://images.unsplash.com/photo-1585747860715-2ba37e788b70?w=600&h=600&fit=crop&q=85", alt: "Classic straight razor shave" },
-	{ src: "https://images.unsplash.com/photo-1634449571010-02389ed0f9b0?w=600&h=600&fit=crop&q=85", alt: "Premium grooming products" },
-	{ src: "https://images.unsplash.com/photo-1622286342621-4bd786c2447c?w=600&h=600&fit=crop&q=85", alt: "Detail work and beard line" },
-	{ src: "https://images.unsplash.com/photo-1604654894610-df63bc536371?w=600&h=600&fit=crop&q=85", alt: "Finished look, fresh out the chair" },
+// Static data from the design (used when CMS data is empty)
+const SERVICES = [
+	{ id: 'cut',   name: "The Cut",       duration: "45 min", price: 55, blurb: "Scissor or clipper, your way. Hot towel finish." },
+	{ id: 'skin',  name: "Skin Fade",     duration: "55 min", price: 65, blurb: "Precision taper, no lines left behind." },
+	{ id: 'beard', name: "Beard Sculpt",  duration: "30 min", price: 40, blurb: "Shape, line-up, hot towel, beard oil." },
+	{ id: 'combo', name: "Cut + Beard",   duration: "75 min", price: 90, blurb: "The full reset. Cut, beard, towel, done." },
+	{ id: 'shave', name: "Straight Razor",duration: "45 min", price: 60, blurb: "Old-school wet shave. Badger brush and all." },
+	{ id: 'dad',   name: "Father & Son",  duration: "75 min", price: 85, blurb: "Two chairs, side by side. Make it a tradition." },
 ];
+
+const BARBERS = [
+	{ id: 'amin',  name: "Amin",  role: "Owner / Master Barber", years: 14, specialty: "Scissor work & classic cuts",
+	  img: "https://images.unsplash.com/photo-1618077360395-f3068be8e001?w=600&h=750&fit=crop&crop=faces&q=85" },
+	{ id: 'jules', name: "Jules", role: "Senior Barber",         years: 9,  specialty: "Skin fades & beard sculpting",
+	  img: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=600&h=750&fit=crop&crop=faces&q=85" },
+	{ id: 'theo',  name: "Theo",  role: "Barber",                years: 5,  specialty: "Textured crops & kids cuts",
+	  img: "https://images.unsplash.com/photo-1531256456869-ce942a665e80?w=600&h=750&fit=crop&crop=faces&q=85" },
+];
+
+const IG_POSTS = [
+	{ id: 1, caption: "Wednesday walk-ins welcome. Chair 2 open all arvo.", tag: "#skinfade",  likes: 184,
+	  img: "https://images.unsplash.com/photo-1503951914875-452162b0f3f1?w=700&h=700&fit=crop&q=85" },
+	{ id: 2, caption: "Father & son Saturdays — book the 11am slot before it's gone.", tag: "#dapperboys", likes: 312,
+	  img: "https://images.unsplash.com/photo-1621605815971-fbc98d665033?w=500&h=500&fit=crop&q=85" },
+	{ id: 3, caption: "Straight razor, hot towel, single malt. Friday evenings only.", tag: "#wetshave", likes: 276,
+	  img: "https://images.unsplash.com/photo-1585747860715-2ba37e788b70?w=500&h=500&fit=crop&q=85" },
+	{ id: 4, caption: "New in: Layrite pomade restocked. Grab one on the way out.", tag: "#product", likes: 98,
+	  img: "https://images.unsplash.com/photo-1634449571010-02389ed0f9b0?w=500&h=500&fit=crop&q=85" },
+	{ id: 5, caption: "Amin back from Milan — new scissor technique, same old stories.", tag: "#thecut", likes: 421,
+	  img: "https://images.unsplash.com/photo-1622286342621-4bd786c2447c?w=500&h=700&fit=crop&q=85" },
+	{ id: 6, caption: "The quiet hour: 2pm Wednesdays. Coffee on us.", tag: "#annandale", likes: 157,
+	  img: "https://images.unsplash.com/photo-1604654894610-df63bc536371?w=700&h=500&fit=crop&q=85" },
+];
+
+const TESTIMONIALS = [
+	{ quote: "Best cut I've had in a decade. Amin actually listens.", who: "James K.", meta: "Regular since 2022" },
+	{ quote: "Feels like a proper barbershop, not a salon pretending to be one.", who: "Tom H.", meta: "Google review · 5★" },
+	{ quote: "Took my dad for his 70th. He's been three times since on his own.", who: "Sarah L.", meta: "Google review · 5★" },
+];
+
+const GIFT_AMOUNTS = [50, 90, 150, 250];
+
+const HOURS = [
+	["Mon — Tue", "Closed"],
+	["Wednesday", "9:00 — 6:00"],
+	["Thursday",  "9:00 — 8:00"],
+	["Friday",    "9:00 — 6:00"],
+	["Saturday",  "8:00 — 4:00"],
+	["Sunday",    "9:00 — 2:00"],
+];
+
+// Use CMS services if available, otherwise use static data
+const displayServices = services.length > 0
+	? services.slice(0, 6).map(s => ({
+		id: s.id,
+		name: s.data.title,
+		duration: s.data.duration ?? "45 min",
+		price: (s.data.price_cents ?? 0) / 100,
+		blurb: s.data.description ?? "",
+	  }))
+	: SERVICES;
+
+// Use CMS products if available (for shop section)
+const displayProducts = products.length > 0
+	? products.slice(0, 4).map(p => ({
+		id: p.id,
+		name: p.data.title,
+		kind: p.data.description ?? "Premium grooming",
+		price: (p.data.price_cents ?? 0) / 100,
+		img: p.data.featured_image,
+	  }))
+	: null;
 ---
 
-<Base title={siteTitle} description={siteTagline}>
+<Base title={siteTitle} description={siteTagline} fullWidth>
 
-	<!-- ═══ HERO ═══════════════════════════════════════════ -->
-	<section class="home-hero full-bleed">
-		<div class="hero-inner site-shell">
-			<div class="hero-text">
-				<p class="eyebrow">Dapper Blokes · Annandale</p>
-				<h1 class="hero-hed">
-					The craft<br />
-					of a <em>great</em><br />
-					haircut.
+<!-- ═══ HERO ═══════════════════════════════════════════════════════════════ -->
+<section class="ed-hero" id="top">
+	<div class="hero-inner ed-shell">
+		<div class="hero-meta">
+			<span class="ed-mono">Est. 2025 · Annandale 2038</span>
+			<span class="ed-mono">Chapter ○ 01</span>
+		</div>
+
+		<div class="hero-grid">
+			<div class="hero-type">
+				<h1 class="hero-display">
+					<span class="display-line">A proper</span>
+					<span class="display-line display-italic">cut,</span>
+					<span class="display-line">an honest</span>
+					<span class="display-line display-italic">chair.</span>
 				</h1>
-				<p class="hero-sub">Precision barbering, beard work, and premium grooming — Booth St, Annandale.</p>
+				<p class="hero-lede">
+					Dapper Blokes is a six-chair barbershop at 45 Booth Street, Annandale.
+					Classic techniques, hot towels, single malts on Fridays.
+					Walk-ins when the bell's on — otherwise, book below.
+				</p>
 				<div class="hero-actions">
-					<a href="/services" class="button button-primary">View Services</a>
-					<a href="/shop" class="button button-outline">Shop Products</a>
-				</div>
-			</div>
-			<div class="hero-photo-wrap" aria-hidden="true">
-				<img
-					src="https://images.unsplash.com/photo-1503951914875-452162b0f3f1?w=960&h=1100&fit=crop&crop=entropy&q=90"
-					alt="Barber at work"
-					class="hero-photo"
-					fetchpriority="high"
-				/>
-			</div>
-		</div>
-		<div class="hero-strip site-shell">
-			<span>Precision Cuts</span>
-			<span class="dot">·</span>
-			<span>Beard Shaping</span>
-			<span class="dot">·</span>
-			<span>Premium Products</span>
-			<span class="dot">·</span>
-			<span>Annandale NSW</span>
-		</div>
-	</section>
-
-	<!-- ═══ SERVICES ════════════════════════════════════════ -->
-	<section class="page-section">
-		<div class="section-header">
-			<div>
-				<p class="eyebrow">What We Do</p>
-				<h2>Signature Services</h2>
-			</div>
-			<a href="/services" class="view-all">All services →</a>
-		</div>
-		{services.length === 0 ? (
-			<p style="color:var(--muted)">Services coming soon.</p>
-		) : (
-			<div class="services-list">
-				{services.slice(0, 4).map((svc, i) => (
-					<a href="/services" class="svc-row animate-up" style={`animation-delay:${i * 0.06}s`}>
-						<div class="svc-row-info">
-							{svc.data.featured_image
-								? <div class="svc-thumb"><Image image={svc.data.featured_image} /></div>
-								: <div class="svc-thumb svc-thumb-placeholder"><span>{svc.data.title.charAt(0)}</span></div>
-							}
-							<div>
-								<h3>{svc.data.title}</h3>
-								{svc.data.summary && <p>{svc.data.summary}</p>}
-							</div>
-						</div>
-						<div class="svc-row-meta">
-							{svc.data.duration_minutes && <span class="svc-dur">{svc.data.duration_minutes} min</span>}
-							<span class="svc-price">{toCurrency(svc.data.price_cents)}</span>
-							<svg class="svc-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-						</div>
+					<a href="#book" class="hero-btn-primary">
+						Book a chair <span aria-hidden>→</span>
 					</a>
-				))}
-			</div>
-		)}
-	</section>
-
-	<hr class="ruled" />
-
-	<!-- ═══ PHILOSOPHY SPLIT ════════════════════════════════ -->
-	<section class="split-section page-section">
-		<div class="split-photo">
-			<img
-				src="https://images.unsplash.com/photo-1621605815971-fbc98d665033?w=800&h=900&fit=crop&q=85"
-				alt="Inside Dapper Blokes"
-				loading="lazy"
-			/>
-		</div>
-		<div class="split-text">
-			<p class="eyebrow">Our Craft</p>
-			<h2>Every cut is a conversation.</h2>
-			<p>We take the time to understand your hair, your style, and your life before we pick up the scissors. No rush, no cookie-cutter results — just clean, considered work from barbers who give a damn.</p>
-			<p style="margin-top:.75rem">Drop in or book ahead at 45 Booth St, Annandale. We're open six days a week.</p>
-			<a href="/contact" class="button button-dark" style="margin-top:1.75rem">Find Us</a>
-		</div>
-	</section>
-
-	<!-- ═══ INSTAGRAM GRID ══════════════════════════════════ -->
-	<section class="insta-section full-bleed">
-		<div class="site-shell">
-			<div class="insta-header">
-				<div>
-					<p class="eyebrow" style="color:var(--accent-light)">Fresh From The Chair</p>
-					<h2 style="color:var(--text-inv)">Follow <a href="https://www.instagram.com/dapper_blokes_2038" target="_blank" rel="noopener" class="insta-handle">@dapper_blokes_2038</a></h2>
+					<a href="#services" class="hero-link-underline">See what we do</a>
 				</div>
-				<a href="https://www.instagram.com/dapper_blokes_2038" target="_blank" rel="noopener" class="button button-outline" style="flex-shrink:0">
-					Open Instagram
-				</a>
 			</div>
-		</div>
-		<div class="insta-grid">
-			{instaGrid.map((img, i) => (
-				<a
-					href="https://www.instagram.com/dapper_blokes_2038"
-					target="_blank"
-					rel="noopener"
-					class="insta-cell"
-					style={`animation-delay:${i * 0.07}s`}
-					aria-label={img.alt}
-				>
-					<img src={img.src} alt={img.alt} loading="lazy" />
-					<div class="insta-overlay">
-						<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor"/></svg>
-					</div>
-				</a>
-			))}
-		</div>
-	</section>
-
-	<!-- ═══ PRODUCTS ════════════════════════════════════════ -->
-	<section class="page-section">
-		<div class="section-header">
-			<div>
-				<p class="eyebrow">In The Shop</p>
-				<h2>Take Home the Goods</h2>
-			</div>
-			<a href="/shop" class="view-all">Full shop →</a>
-		</div>
-		{products.length === 0 ? (
-			<p style="color:var(--muted)">Products coming soon.</p>
-		) : (
-			<div class="grid grid-3">
-				{products.slice(0, 3).map((product, i) => (
-					<article class="product-card animate-up" style={`animation-delay:${i * 0.07}s`}>
-						<a href={`/products/${product.id}`} tabindex="-1" aria-hidden="true">
-							{product.data.featured_image
-								? <div class="product-img"><Image image={product.data.featured_image} /></div>
-								: <div class="product-img-placeholder"><span>{product.data.title.charAt(0)}</span></div>
-							}
-						</a>
-						<div class="product-card-body">
-							<h3><a href={`/products/${product.id}`} style="color:inherit">{product.data.title}</a></h3>
-							{product.data.description && <p>{product.data.description}</p>}
-							<div class="product-card-footer">
-								<span class="price">{toCurrency(product.data.price_cents)}</span>
-								<div style="display:flex;align-items:center;gap:.6rem">
-									<span class={`stock-badge${product.data.in_stock ? "" : " out"}`}>
-										{product.data.in_stock ? "In stock" : "Out of stock"}
-									</span>
-									{product.data.in_stock && (
-										<a
-											href={`/shop/checkout?id=${product.id}&title=${encodeURIComponent(product.data.title)}&price=${product.data.price_cents}`}
-											class="button-buy button"
-										>Buy Now</a>
-									)}
-								</div>
-							</div>
-						</div>
-					</article>
-				))}
-			</div>
-		)}
-	</section>
-
-	<!-- ═══ QUOTE BAND ══════════════════════════════════════ -->
-	<blockquote class="quote-band full-bleed">
-		<div class="site-shell">
-			<p class="quote-mark">"</p>
-			<p class="quote-text">Not just a haircut — it's an hour that's yours. Come in looking good, leave looking great.</p>
-			<cite>— Amin, Head Barber at Dapper Blokes</cite>
-		</div>
-	</blockquote>
-
-	<!-- ═══ BOOK CTA ═════════════════════════════════════════ -->
-	<div class="book-cta full-bleed">
-		<div class="site-shell book-cta-inner">
-			<div>
-				<p class="eyebrow" style="color:var(--accent)">Ready?</p>
-				<h2>Book your next appointment.</h2>
-				<p>Walk-ins welcome — booking ahead secures your time.</p>
-			</div>
-			<div class="book-cta-actions">
-				<a href="/contact" class="button button-dark">Get in Touch</a>
-				<a href="/services" class="button button-ghost">See Pricing</a>
+			<div class="hero-img-wrap">
+				<img
+					src="https://images.unsplash.com/photo-1503951914875-452162b0f3f1?w=900&h=1100&fit=crop&crop=entropy&q=90"
+					alt="Barber at work in the chair"
+					class="hero-img"
+					fetchpriority="high"
+					loading="eager"
+				/>
+				<div class="hero-img-caption">
+					<span class="ed-mono">Fig. 01</span>
+					<span>Amin, chair two. Scissor-over-comb.</span>
+				</div>
 			</div>
 		</div>
 	</div>
+</section>
+
+<!-- ═══ MARQUEE ════════════════════════════════════════════════════════════ -->
+<div class="marquee-band" aria-hidden="true">
+	<div class="marquee-track">
+		{["Scissor & clipper", "Skin fades", "Beard sculpt", "Straight razor", "Father & son", "Hot towel ritual", "Single malt Fridays", "Walk-ins welcome",
+		  "Scissor & clipper", "Skin fades", "Beard sculpt", "Straight razor", "Father & son", "Hot towel ritual", "Single malt Fridays", "Walk-ins welcome",
+		  "Scissor & clipper", "Skin fades", "Beard sculpt", "Straight razor", "Father & son", "Hot towel ritual", "Single malt Fridays", "Walk-ins welcome"].map((t, i) => (
+			<span class="marquee-item">
+				<span>{t}</span>
+				<span class="marquee-dot">◆</span>
+			</span>
+		))}
+	</div>
+</div>
+
+<!-- ═══ SERVICES ════════════════════════════════════════════════════════════ -->
+<section class="ed-section" id="services">
+	<div class="ed-section-head">
+		<span class="ed-mono">№ 02 — Services</span>
+		<h2 class="ed-h2">
+			Everything you'd expect<br />
+			<span class="ed-display-italic">from a proper barbershop.</span>
+		</h2>
+	</div>
+
+	<ol class="svc-list">
+		{displayServices.map((s, i) => (
+			<li class="svc-row" data-svc>
+				<span class="svc-num ed-mono">0{i + 1}</span>
+				<span class="svc-name">{s.name}</span>
+				<span class="svc-dur ed-mono">{s.duration}</span>
+				<span class="svc-blurb">{s.blurb}</span>
+				<span class="svc-price">${s.price}</span>
+			</li>
+		))}
+	</ol>
+	<p class="svc-note ed-mono">All services include a complimentary beverage. Cash or card, no surcharge.</p>
+</section>
+
+<!-- ═══ TEAM ════════════════════════════════════════════════════════════════ -->
+<section class="ed-section" id="team">
+	<div class="ed-section-head">
+		<span class="ed-mono">№ 03 — The Chairs</span>
+		<h2 class="ed-h2">
+			Three barbers.<br />
+			<span class="ed-display-italic">Twenty-eight years between them.</span>
+		</h2>
+	</div>
+
+	<div class="team-grid">
+		{BARBERS.map((b, i) => (
+			<article class="team-card">
+				<div class="team-img-wrap">
+					<img src={b.img} alt={b.name} class="team-img" loading="lazy" />
+					<span class="team-num ed-mono">0{i + 1}</span>
+				</div>
+				<div class="team-meta">
+					<h3 class="team-name">{b.name}</h3>
+					<div class="ed-mono">{b.role} · {b.years} years</div>
+					<p class="team-spec">{b.specialty}</p>
+				</div>
+			</article>
+		))}
+	</div>
+</section>
+
+<!-- ═══ INSTAGRAM / JOURNAL ═════════════════════════════════════════════════ -->
+<section class="ed-section ig-section" id="feed">
+	<div class="ed-section-head" style="flex-direction:row;justify-content:space-between;align-items:flex-end">
+		<div>
+			<span class="ed-mono">№ 04 — Journal</span>
+			<h2 class="ed-h2" style="margin-top:24px">
+				From the feed<br />
+				<span class="ed-display-italic">@dapper_blokes_2038</span>
+			</h2>
+		</div>
+		<a href="https://www.instagram.com/dapper_blokes_2038" target="_blank" rel="noreferrer" class="ig-follow-link">
+			Follow on Instagram →
+		</a>
+	</div>
+
+	<div class="ig-grid">
+		{IG_POSTS.map((post, i) => (
+			<figure class={`ig-item ig-item-${i}`}>
+				<div class="ig-img-wrap">
+					<img src={post.img} alt={post.caption} class="ig-img" loading="lazy" />
+				</div>
+				<figcaption class="ig-cap">
+					<span class="ed-mono ig-tag">{post.tag}</span>
+					<p class="ig-caption">"{post.caption}"</p>
+					<span class="ed-mono ig-likes">♥ {post.likes}</span>
+				</figcaption>
+			</figure>
+		))}
+	</div>
+</section>
+
+<!-- ═══ BOOKING ══════════════════════════════════════════════════════════════ -->
+<section class="ed-section book-section" id="book">
+	<div class="ed-section-head">
+		<span class="ed-mono">№ 05 — Reservations</span>
+		<h2 class="ed-h2">
+			Claim a chair<br />
+			<span class="ed-display-italic">in four steps.</span>
+		</h2>
+	</div>
+
+	<div class="bk-root" id="booking-flow">
+		<!-- Progress -->
+		<div class="bk-progress">
+			<div class="bk-step is-active" data-step="0">
+				<span class="bk-step-num">01</span>
+				<span class="bk-step-label">Service</span>
+			</div>
+			<div class="bk-step" data-step="1">
+				<span class="bk-step-num">02</span>
+				<span class="bk-step-label">Barber</span>
+			</div>
+			<div class="bk-step" data-step="2">
+				<span class="bk-step-num">03</span>
+				<span class="bk-step-label">Time</span>
+			</div>
+			<div class="bk-step" data-step="3">
+				<span class="bk-step-num">04</span>
+				<span class="bk-step-label">Details</span>
+			</div>
+		</div>
+
+		<!-- Step 0: Service -->
+		<div class="bk-panel" id="bk-panel-0">
+			<div class="bk-grid bk-grid-services">
+				{SERVICES.map(s => (
+					<button class="bk-card" data-pick="service" data-value={s.id} data-price={s.price}>
+						<div class="bk-card-head">
+							<span class="bk-card-title">{s.name}</span>
+							<span class="bk-card-price">${s.price}</span>
+						</div>
+						<div class="bk-card-meta">{s.duration}</div>
+						<div class="bk-card-blurb">{s.blurb}</div>
+					</button>
+				))}
+			</div>
+		</div>
+
+		<!-- Step 1: Barber -->
+		<div class="bk-panel" id="bk-panel-1" hidden>
+			<div class="bk-grid bk-grid-barbers">
+				<button class="bk-card bk-card-any" data-pick="barber" data-value="any">
+					<div class="bk-card-title">No preference</div>
+					<div class="bk-card-meta">First available chair</div>
+				</button>
+				{BARBERS.map(b => (
+					<button class="bk-card" data-pick="barber" data-value={b.id}>
+						<div class="bk-card-avatar">
+							<img src={b.img} alt={b.name} style="width:100%;height:100%;object-fit:cover;display:block" loading="lazy" />
+						</div>
+						<div class="bk-card-title">{b.name}</div>
+						<div class="bk-card-meta">{b.role}</div>
+						<div class="bk-card-blurb">{b.specialty}</div>
+					</button>
+				))}
+			</div>
+		</div>
+
+		<!-- Step 2: Time -->
+		<div class="bk-panel" id="bk-panel-2" hidden>
+			<span class="bk-label">Pick a day</span>
+			<div class="bk-days" id="bk-days"></div>
+			<div id="bk-times-wrap" hidden>
+				<span class="bk-label" style="margin-top:28px;display:block">Pick a time</span>
+				<div class="bk-times" id="bk-times"></div>
+			</div>
+		</div>
+
+		<!-- Step 3: Details -->
+		<div class="bk-panel" id="bk-panel-3" hidden>
+			<div class="bk-details">
+				<label class="bk-field">
+					<span class="bk-label">Your name</span>
+					<input type="text" id="bk-name" placeholder="First and last" autocomplete="name" />
+				</label>
+				<label class="bk-field">
+					<span class="bk-label">Mobile</span>
+					<input type="tel" id="bk-phone" placeholder="04xx xxx xxx" autocomplete="tel" />
+				</label>
+				<div class="bk-summary" id="bk-summary"></div>
+			</div>
+		</div>
+
+		<!-- Confirm screen -->
+		<div class="bk-panel bk-confirm" id="bk-panel-done" hidden>
+			<div class="bk-confirm-mark">✓</div>
+			<div class="bk-confirm-eyebrow">Booking held</div>
+			<h3 class="bk-confirm-title" id="bk-confirm-title">See you soon.</h3>
+			<p class="bk-confirm-body">We've texted a confirmation. If plans change, reply to that message.</p>
+			<button class="bk-btn bk-btn-ghost" id="bk-reset">Book another</button>
+		</div>
+
+		<div class="bk-nav" id="bk-nav">
+			<button class="bk-btn bk-btn-ghost" id="bk-back" disabled>Back</button>
+			<button class="bk-btn bk-btn-primary" id="bk-next" disabled>Continue <span>→</span></button>
+		</div>
+	</div>
+</section>
+
+<!-- ═══ TESTIMONIALS ════════════════════════════════════════════════════════ -->
+<section class="ed-section quotes-section">
+	<div class="quote-mark" aria-hidden="true">"</div>
+	<div class="quote-stack" id="quote-stack">
+		{TESTIMONIALS.map((t, i) => (
+			<blockquote class={`quote ${i === 0 ? 'is-active' : ''}`} data-quote={i} aria-hidden={i !== 0}>
+				<p class="quote-text">{t.quote}</p>
+				<cite class="quote-cite">
+					<span>{t.who}</span>
+					<span class="ed-mono">{t.meta}</span>
+				</cite>
+			</blockquote>
+		))}
+	</div>
+	<div class="quote-dots">
+		{TESTIMONIALS.map((_, i) => (
+			<button class={`quote-dot ${i === 0 ? 'is-active' : ''}`} data-dot={i} aria-label={`Testimonial ${i + 1}`} />
+		))}
+	</div>
+</section>
+
+<!-- ═══ GIFT CARDS ═══════════════════════════════════════════════════════════ -->
+<section class="ed-section gift-section">
+	<div class="gift-grid">
+		<div class="gift-text">
+			<span class="ed-mono">№ 06 — Gift Cards</span>
+			<h2 class="ed-h2" style="margin-top:24px">
+				The well-judged<br />
+				<span class="ed-display-italic">present.</span>
+			</h2>
+			<p class="gift-lede">
+				For dads, brothers, groomsmen, or the mate who still cuts his own fringe.
+				Redeemable for any service. Never expires.
+			</p>
+			<div class="gift-amounts" id="gift-amounts">
+				{GIFT_AMOUNTS.map(a => (
+					<button class={`gift-amount ${a === 90 ? 'is-picked' : ''}`} data-amount={a}>${a}</button>
+				))}
+			</div>
+			<button class="gift-buy-btn" id="gift-buy-btn">Send a $90 card <span>→</span></button>
+		</div>
+		<div class="gift-card-visual" id="gift-card-visual">
+			<div class="gift-card-inner">
+				<div class="gift-card-top">
+					<img src="/logo.svg" alt="" class="gift-card-logo" />
+					<span class="ed-mono" style="opacity:0.5">Gift Card</span>
+				</div>
+				<div class="gift-card-amount" id="gift-card-amount">$90</div>
+				<div class="gift-card-foot">
+					<span class="ed-mono" style="opacity:0.5">Redeemable in-shop or online</span>
+					<span class="ed-mono" id="gift-card-num" style="opacity:0.4">№ DB-000630</span>
+				</div>
+			</div>
+		</div>
+	</div>
+</section>
+
+<!-- ═══ SHOP ════════════════════════════════════════════════════════════════ -->
+<section class="ed-section shop-section" id="shop">
+	<div class="ed-section-head" style="flex-direction:row;justify-content:space-between;align-items:flex-end">
+		<div>
+			<span class="ed-mono">№ 07 — The Shelf</span>
+			<h2 class="ed-h2" style="margin-top:24px">
+				What we use,<br />
+				<span class="ed-display-italic">what you take home.</span>
+			</h2>
+		</div>
+		<a href="/shop" class="ig-follow-link">See everything →</a>
+	</div>
+
+	<div class="shop-grid">
+		{displayProducts
+			? displayProducts.map(p => (
+				<a href={`/products/${p.id}`} class="shop-card">
+					<div class="shop-img-wrap">
+						{p.img
+							? <Image image={p.img} class="shop-img" />
+							: <div class="shop-img-placeholder"><span>{p.name.charAt(0)}</span></div>
+						}
+					</div>
+					<div class="shop-meta">
+						<div>
+							<h3 class="shop-name">{p.name}</h3>
+							<div class="ed-mono">{p.kind}</div>
+						</div>
+						<span class="shop-price">{toCurrency(p.price * 100)}</span>
+					</div>
+				</a>
+			))
+			: [
+				{ name: "Layrite Original", kind: "Pomade · 120g", price: 32, img: "https://images.unsplash.com/photo-1585421514738-01798e348b17?w=400&h=400&fit=crop&q=85" },
+				{ name: "Dapper No.3", kind: "Beard Oil · 30ml", price: 28, img: "https://images.unsplash.com/photo-1608248543803-ba4f8c70ae0b?w=400&h=400&fit=crop&q=85" },
+				{ name: "Badger Brush", kind: "Shaving · Silvertip", price: 85, img: "https://images.unsplash.com/photo-1540555700478-4be289fbecef?w=400&h=400&fit=crop&q=85" },
+				{ name: "Hot Towel Set", kind: "At-home ritual", price: 45, img: "https://images.unsplash.com/photo-1611930022073-b7a4ba5fcccd?w=400&h=400&fit=crop&q=85" },
+			].map(p => (
+				<a href="/shop" class="shop-card">
+					<div class="shop-img-wrap">
+						<img src={p.img} alt={p.name} class="shop-img" loading="lazy" />
+					</div>
+					<div class="shop-meta">
+						<div>
+							<h3 class="shop-name">{p.name}</h3>
+							<div class="ed-mono">{p.kind}</div>
+						</div>
+						<span class="shop-price">${p.price}</span>
+					</div>
+				</a>
+			))
+		}
+	</div>
+</section>
+
+<!-- ═══ LOCATION ════════════════════════════════════════════════════════════ -->
+<section class="ed-section visit-section" id="visit">
+	<div class="visit-grid">
+		<div class="visit-text">
+			<span class="ed-mono">№ 08 — Visit</span>
+			<h2 class="ed-h2" style="margin-top:24px">
+				Booth Street,<br />
+				<span class="ed-display-italic">Annandale.</span>
+			</h2>
+			<div class="visit-info">
+				<div>
+					<div class="ed-mono">Address</div>
+					<p class="visit-detail">45 Booth St, Annandale NSW 2038</p>
+				</div>
+				<div>
+					<div class="ed-mono">Phone</div>
+					<p class="visit-detail">(02) 9555 0210</p>
+				</div>
+				<div>
+					<div class="ed-mono">Email</div>
+					<p class="visit-detail">hello@dapperblokes.hair</p>
+				</div>
+			</div>
+		</div>
+		<div class="visit-hours">
+			<div class="ed-mono" style="margin-bottom:16px">Hours</div>
+			<ul class="hours-list">
+				{HOURS.map(([day, hrs]) => (
+					<li class="hours-row">
+						<span>{day}</span>
+						<span class={hrs === "Closed" ? "hours-closed" : ""}>{hrs}</span>
+					</li>
+				))}
+			</ul>
+		</div>
+		<div class="visit-map">
+			<iframe
+				src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3313.75!2d151.1756!3d-33.8886!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zMzPCsDUzJzE4LjkiUyAxNTHCsDEwJzMyLjIiRQ!5e0!3m2!1sen!2sau!4v1234567890"
+				width="100%" height="100%" style="border:0" loading="lazy"
+				allowfullscreen title="Dapper Blokes location map"
+			></iframe>
+		</div>
+	</div>
+</section>
 
 </Base>
 
 <style>
-	/* ─── Hero ──────────────────────────────── */
-	.home-hero {
-		background: var(--bg-dark);
-		color: var(--text-inv);
-		overflow: hidden;
-	}
+/* ─────────────────────────────────────────────────────────────
+   HERO
+───────────────────────────────────────────────────────────── */
+.ed-hero {
+	min-height: 100vh;
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	padding-top: 80px;
+	border-bottom: 1px solid var(--line);
+}
 
-	.hero-inner {
-		display: grid;
-		grid-template-columns: 1fr 1fr;
-		min-height: 88vh;
-		align-items: center;
-		gap: 0;
-		position: relative;
-	}
+.hero-inner {
+	display: flex;
+	flex-direction: column;
+	justify-content: space-between;
+	padding-top: 40px;
+	padding-bottom: 60px;
+	gap: 60px;
+}
 
-	.hero-text {
-		padding: 5rem 4rem 5rem 0;
-		position: relative;
-		z-index: 2;
-	}
+.hero-meta {
+	display: flex;
+	justify-content: space-between;
+	padding-bottom: 24px;
+	border-bottom: 1px solid var(--line);
+}
 
-	.hero-hed {
-		font-size: clamp(3.5rem, 7vw, 6.5rem);
-		font-weight: 700;
-		line-height: 0.95;
-		color: var(--text-inv);
-		margin: 0.6rem 0 1.25rem;
-	}
+.hero-grid {
+	display: grid;
+	grid-template-columns: 1.1fr 0.9fr;
+	gap: 80px;
+	align-items: center;
+}
 
-	.hero-hed em {
-		font-style: italic;
-		font-weight: 300;
-		color: var(--accent-light);
-	}
+.hero-display {
+	font-family: var(--font-display);
+	font-weight: 300;
+	font-size: clamp(72px, 11vw, 160px);
+	line-height: 0.92;
+	letter-spacing: -0.025em;
+	font-variation-settings: "SOFT" 100, "opsz" 144;
+	margin: 0;
+}
 
-	.hero-sub {
-		font-size: 1rem;
-		color: var(--muted-inv);
-		max-width: 40ch;
-		line-height: 1.65;
-		margin-bottom: 2rem;
-	}
+.display-line { display: block; }
+.display-line:nth-child(2),
+.display-line:nth-child(4) {
+	margin-left: clamp(32px, 7vw, 100px);
+}
 
-	.hero-actions {
-		display: flex;
-		gap: 0.75rem;
-		flex-wrap: wrap;
-	}
+.display-italic {
+	font-style: italic;
+	color: var(--accent);
+}
 
-	.hero-photo-wrap {
-		position: relative;
-		height: 88vh;
-		overflow: hidden;
-	}
+.hero-lede {
+	font-size: 17px;
+	line-height: 1.65;
+	color: var(--fg-dim);
+	max-width: 400px;
+	margin: 44px 0 32px;
+}
 
-	.hero-photo-wrap::before {
-		content: "";
-		position: absolute;
-		inset: 0 auto 0 0;
-		width: 200px;
-		background: linear-gradient(to right, var(--bg-dark), transparent);
-		z-index: 1;
-	}
+.hero-actions { display: flex; gap: 24px; align-items: center; flex-wrap: wrap; }
 
-	.hero-photo {
-		width: 100%;
-		height: 100%;
-		object-fit: cover;
-		object-position: center top;
-		display: block;
-	}
+.hero-btn-primary {
+	display: inline-flex;
+	align-items: center;
+	gap: 14px;
+	font-family: var(--font-mono);
+	font-size: 12px;
+	letter-spacing: 2.4px;
+	text-transform: uppercase;
+	padding: 20px 34px;
+	background: var(--accent);
+	color: var(--accent-fg);
+	text-decoration: none;
+	transition: all .2s;
+}
 
-	.hero-strip {
-		display: flex;
-		gap: 0.9rem;
-		align-items: center;
-		flex-wrap: wrap;
-		padding: 1rem 0;
-		border-top: 1px solid var(--line-dark);
-		font-size: 0.72rem;
-		font-weight: 600;
-		letter-spacing: 0.15em;
-		text-transform: uppercase;
-		color: #4a4238;
-	}
+.hero-btn-primary:hover { filter: brightness(1.1); transform: translateY(-2px); }
 
-	.hero-strip .dot { color: var(--accent); }
+.hero-link-underline {
+	color: var(--fg-dim);
+	text-decoration: none;
+	border-bottom: 1px solid var(--line-2);
+	padding-bottom: 4px;
+	font-size: 14px;
+	transition: color .2s, border-color .2s;
+}
 
-	/* ─── Services list ─────────────────────── */
-	.services-list {
-		display: flex;
-		flex-direction: column;
-		gap: 0;
-	}
+.hero-link-underline:hover { color: var(--accent); border-color: var(--accent); }
 
-	.svc-row {
-		display: flex;
-		align-items: center;
-		justify-content: space-between;
-		gap: 1.5rem;
-		padding: 1.25rem 0;
-		border-bottom: 1px solid var(--line);
-		transition: background 0.15s;
-		border-radius: var(--radius);
-		cursor: pointer;
-	}
+.hero-img-wrap {
+	aspect-ratio: 3 / 4;
+	position: relative;
+}
 
-	.svc-row:first-child { border-top: 1px solid var(--line); }
+.hero-img {
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+	display: block;
+}
 
-	.svc-row:hover { color: var(--accent); }
+.hero-img-caption {
+	position: absolute;
+	bottom: -36px;
+	left: 0;
+	right: 0;
+	display: flex;
+	gap: 14px;
+	color: var(--muted);
+}
 
-	.svc-row-info {
-		display: flex;
-		align-items: center;
-		gap: 1rem;
-		flex: 1;
-		min-width: 0;
-	}
+/* ─── Marquee ─────────────────────────────────────────────── */
+.marquee-band {
+	border-top: 1px solid var(--line);
+	border-bottom: 1px solid var(--line);
+	padding: 28px 0;
+	overflow: hidden;
+}
 
-	.svc-thumb {
-		width: 52px;
-		height: 52px;
-		border-radius: var(--radius);
-		overflow: hidden;
-		flex-shrink: 0;
-	}
+.marquee-track {
+	display: flex;
+	gap: 48px;
+	animation: marquee-scroll 80s linear infinite;
+	width: max-content;
+}
 
-	.svc-thumb img { width: 100%; height: 100%; object-fit: cover; }
+.marquee-item {
+	display: inline-flex;
+	align-items: center;
+	gap: 48px;
+	font-family: var(--font-display);
+	font-weight: 300;
+	font-style: italic;
+	font-size: 38px;
+	letter-spacing: -0.02em;
+	color: var(--text);
+	white-space: nowrap;
+}
 
-	.svc-thumb-placeholder {
-		background: var(--bg-off);
-		border: 1px solid var(--line);
-		display: flex;
-		align-items: center;
-		justify-content: center;
-	}
+.marquee-dot { color: var(--accent); font-style: normal; font-size: 18px; }
 
-	.svc-thumb-placeholder span {
-		font-family: "Fraunces", serif;
-		font-size: 1.2rem;
-		font-weight: 600;
-		color: var(--muted);
-	}
+@keyframes marquee-scroll {
+	from { transform: translateX(0); }
+	to   { transform: translateX(-33.333%); }
+}
 
-	.svc-row-info h3 {
-		font-size: 1.05rem;
-		margin-bottom: 0.15rem;
-		font-weight: 600;
-	}
+/* ─── Services ────────────────────────────────────────────── */
+.svc-list {
+	list-style: none;
+	padding: 0;
+	margin: 0;
+	border-top: 1px solid var(--line);
+}
 
-	.svc-row-info p {
-		font-size: 0.85rem;
-		color: var(--muted);
-		line-height: 1.4;
-		white-space: nowrap;
-		overflow: hidden;
-		text-overflow: ellipsis;
-		max-width: 40ch;
-	}
+.svc-row {
+	display: grid;
+	grid-template-columns: 48px 1.2fr 0.5fr 1.4fr auto;
+	gap: 28px;
+	align-items: baseline;
+	padding: 30px 0;
+	border-bottom: 1px solid var(--line);
+	cursor: default;
+	position: relative;
+	transition: padding .3s;
+}
 
-	.svc-row-meta {
-		display: flex;
-		align-items: center;
-		gap: 1rem;
-		flex-shrink: 0;
-	}
+.svc-row::before {
+	content: "";
+	position: absolute;
+	inset: 0;
+	background: var(--accent-wash);
+	opacity: 0;
+	transition: opacity .25s;
+	pointer-events: none;
+}
 
-	.svc-dur {
-		font-size: 0.8rem;
-		color: var(--muted);
-	}
+.svc-row:hover::before { opacity: 1; }
+.svc-row:hover { padding-left: 16px; padding-right: 16px; }
 
-	.svc-price {
-		font-family: "Fraunces", serif;
-		font-size: 1.15rem;
-		font-weight: 600;
-	}
+.svc-num { color: var(--muted); }
 
-	.svc-arrow {
-		color: var(--muted);
-		flex-shrink: 0;
-		transition: transform 0.2s, color 0.2s;
-	}
+.svc-name {
+	font-family: var(--font-display);
+	font-weight: 300;
+	font-size: 38px;
+	letter-spacing: -0.02em;
+	line-height: 1;
+	transition: color .2s, font-style .2s;
+}
 
-	.svc-row:hover .svc-arrow { transform: translateX(3px); color: var(--accent); }
+.svc-row:hover .svc-name { font-style: italic; color: var(--accent); }
 
-	/* ─── Philosophy split ──────────────────── */
-	.split-section {
-		display: grid;
-		grid-template-columns: 1fr 1fr;
-		gap: 5rem;
-		align-items: center;
-	}
+.svc-dur { color: var(--fg-dim); }
+.svc-blurb { color: var(--fg-dim); font-size: 14px; }
 
-	.split-photo {
-		border-radius: var(--radius-lg);
-		overflow: hidden;
-		aspect-ratio: 4/5;
-	}
+.svc-price {
+	font-family: var(--font-display);
+	font-weight: 300;
+	font-size: 30px;
+	letter-spacing: -0.02em;
+}
 
-	.split-photo img {
-		width: 100%;
-		height: 100%;
-		object-fit: cover;
-	}
+.svc-note { margin-top: 24px; color: var(--muted); }
 
-	.split-text h2 {
-		font-size: clamp(1.8rem, 3.5vw, 2.75rem);
-		margin: 0.5rem 0 1rem;
-		line-height: 1.1;
-	}
+/* ─── Team ────────────────────────────────────────────────── */
+.team-grid {
+	display: grid;
+	grid-template-columns: repeat(3, 1fr);
+	gap: 40px;
+}
 
-	.split-text p {
-		color: var(--muted);
-		font-size: 0.9375rem;
-		line-height: 1.7;
-	}
+.team-card { display: flex; flex-direction: column; gap: 24px; }
 
-	/* ─── Instagram grid ────────────────────── */
-	.insta-section {
-		background: var(--bg-dark);
-		padding: 4rem 0 0;
-		margin-top: 4rem;
-	}
+.team-img-wrap {
+	aspect-ratio: 4/5;
+	position: relative;
+	overflow: hidden;
+}
 
-	.insta-header {
-		display: flex;
-		justify-content: space-between;
-		align-items: flex-end;
-		gap: 1.5rem;
-		padding-bottom: 2rem;
-		flex-wrap: wrap;
-	}
+.team-img {
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+	display: block;
+	transition: transform .6s ease;
+}
 
-	.insta-handle {
-		color: var(--accent-light);
-		text-decoration: underline;
-		text-underline-offset: 4px;
-		text-decoration-color: rgba(232,176,48,.35);
-		transition: text-decoration-color 0.2s;
-	}
+.team-card:hover .team-img { transform: scale(1.04); }
 
-	.insta-handle:hover { text-decoration-color: var(--accent-light); }
+.team-num {
+	position: absolute;
+	top: 16px;
+	left: 16px;
+	color: var(--text);
+	background: color-mix(in oklab, var(--bg) 70%, transparent);
+	padding: 6px 10px;
+}
 
-	.insta-grid {
-		display: grid;
-		grid-template-columns: repeat(6, 1fr);
-		gap: 2px;
-	}
+.team-name {
+	font-family: var(--font-display);
+	font-weight: 300;
+	font-size: 38px;
+	letter-spacing: -0.02em;
+	margin: 0;
+}
 
-	.insta-cell {
-		aspect-ratio: 1;
-		overflow: hidden;
-		position: relative;
-		display: block;
-	}
+.team-spec { color: var(--fg-dim); font-size: 15px; margin: 8px 0 0; line-height: 1.5; }
 
-	.insta-cell img {
-		width: 100%;
-		height: 100%;
-		object-fit: cover;
-		transition: transform 0.4s ease, filter 0.4s ease;
-		filter: saturate(0.85) brightness(0.95);
-	}
+/* ─── Instagram feed ──────────────────────────────────────── */
+.ig-grid {
+	display: grid;
+	grid-template-columns: repeat(12, 1fr);
+	gap: 20px;
+	grid-auto-rows: 120px;
+}
 
-	.insta-cell:hover img {
-		transform: scale(1.06);
-		filter: saturate(1.05) brightness(1);
-	}
+.ig-item { position: relative; display: flex; flex-direction: column; gap: 16px; }
+.ig-item-0 { grid-column: 1 / 6;  grid-row: span 4; }
+.ig-item-1 { grid-column: 6 / 10; grid-row: span 3; }
+.ig-item-2 { grid-column: 10 / 13;grid-row: span 3; }
+.ig-item-3 { grid-column: 6 / 9;  grid-row: span 3; }
+.ig-item-4 { grid-column: 9 / 13; grid-row: span 4; }
+.ig-item-5 { grid-column: 1 / 6;  grid-row: span 3; }
 
-	.insta-overlay {
-		position: absolute;
-		inset: 0;
-		background: rgba(11,9,7,0.55);
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		color: white;
-		opacity: 0;
-		transition: opacity 0.3s;
-	}
+.ig-img-wrap { flex: 1; overflow: hidden; }
 
-	.insta-cell:hover .insta-overlay { opacity: 1; }
+.ig-img {
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+	display: block;
+	transition: transform .5s ease;
+}
 
-	/* ─── Product image placeholder ─────────── */
-	.product-img img { width: 100%; height: 220px; object-fit: cover; }
+.ig-item:hover .ig-img { transform: scale(1.03); }
 
-	.product-img-placeholder {
-		height: 220px;
-		background: var(--bg-off);
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		border-bottom: 1px solid var(--line);
-	}
+.ig-cap { display: flex; flex-direction: column; gap: 6px; font-size: 14px; }
+.ig-tag { color: var(--accent) !important; }
+.ig-caption { margin: 0; color: var(--fg-dim); font-style: italic; line-height: 1.5; }
+.ig-likes { color: var(--accent) !important; }
 
-	.product-img-placeholder span {
-		font-family: "Fraunces", serif;
-		font-size: 3rem;
-		font-weight: 600;
-		color: var(--line);
-	}
+.ig-follow-link {
+	color: var(--fg-dim);
+	text-decoration: none;
+	border-bottom: 1px solid var(--line-2);
+	padding-bottom: 4px;
+	font-size: 14px;
+	transition: color .2s, border-color .2s;
+	white-space: nowrap;
+	align-self: flex-end;
+}
 
-	/* ─── Quote band ────────────────────────── */
-	.quote-band {
-		background: var(--bg-off);
-		border-top: 1px solid var(--line);
-		border-bottom: 1px solid var(--line);
-		padding: 4rem 0;
-		text-align: center;
-		margin-top: 4rem;
-	}
+.ig-follow-link:hover { color: var(--accent); border-color: var(--accent); }
 
-	.quote-mark {
-		font-family: "Fraunces", serif;
-		font-size: 5rem;
-		line-height: 0.5;
-		color: var(--line);
-		margin-bottom: 1rem;
-		font-weight: 300;
-	}
+/* ─── Booking flow ────────────────────────────────────────── */
+.book-section { background: var(--bg-2); }
 
-	.quote-text {
-		font-family: "Fraunces", serif;
-		font-size: clamp(1.25rem, 2.5vw, 1.75rem);
-		font-style: italic;
-		font-weight: 300;
-		max-width: 56ch;
-		margin: 0 auto 1rem;
-		line-height: 1.45;
-		color: var(--text);
-	}
+.bk-root { color: var(--text); }
 
-	.quote-band cite {
-		font-size: 0.8rem;
-		font-weight: 600;
-		letter-spacing: 0.12em;
-		text-transform: uppercase;
-		color: var(--accent);
-	}
+.bk-progress {
+	display: grid;
+	grid-template-columns: repeat(4, 1fr);
+	border-bottom: 1px solid var(--line);
+	margin-bottom: 40px;
+}
 
-	/* ─── Book CTA ──────────────────────────── */
-	.book-cta {
-		background: var(--bg-off);
-		border-top: 1px solid var(--line);
-		padding: 4rem 0;
-	}
+.bk-step {
+	display: flex;
+	align-items: baseline;
+	gap: 10px;
+	padding: 18px 2px;
+	position: relative;
+	cursor: default;
+	color: var(--muted);
+	transition: color .25s;
+}
 
-	.book-cta-inner {
-		display: flex;
-		align-items: center;
-		justify-content: space-between;
-		gap: 2rem;
-		flex-wrap: wrap;
-	}
+.bk-step.is-done { cursor: pointer; color: var(--text); }
+.bk-step.is-active { color: var(--text); }
+.bk-step.is-active::after {
+	content: "";
+	position: absolute;
+	left: 0; right: 0; bottom: -1px;
+	height: 2px;
+	background: var(--accent);
+}
 
-	.book-cta h2 {
-		font-size: clamp(1.5rem, 3vw, 2.25rem);
-		margin: 0.35rem 0 0.5rem;
-	}
+.bk-step-num {
+	font-family: var(--font-mono);
+	font-size: 11px;
+	letter-spacing: 1.6px;
+}
 
-	.book-cta p { color: var(--muted); font-size: 0.9375rem; }
+.bk-step-label {
+	font-family: var(--font-display);
+	font-size: 20px;
+	letter-spacing: -.01em;
+}
 
-	.book-cta-actions { display: flex; gap: 0.75rem; flex-wrap: wrap; }
+.bk-panel { min-height: 320px; }
 
-	/* ─── Responsive ────────────────────────── */
-	@media (max-width: 900px) {
-		.hero-inner { grid-template-columns: 1fr; min-height: auto; }
-		.hero-photo-wrap { display: none; }
-		.hero-text { padding: 4rem 0 2.5rem; }
+.bk-grid { display: grid; gap: 14px; }
+.bk-grid-services { grid-template-columns: repeat(3, 1fr); }
+.bk-grid-barbers { grid-template-columns: repeat(4, 1fr); }
 
-		.split-section { grid-template-columns: 1fr; }
-		.split-photo { aspect-ratio: 16/9; }
+.bk-card {
+	background: transparent;
+	border: 1px solid var(--line);
+	padding: 20px 22px;
+	text-align: left;
+	color: var(--text);
+	cursor: pointer;
+	transition: all .2s;
+	font-family: inherit;
+	font-size: inherit;
+	display: flex;
+	flex-direction: column;
+	gap: 6px;
+}
 
-		.insta-grid { grid-template-columns: repeat(3, 1fr); }
-	}
+.bk-card:hover { border-color: var(--text); }
 
-	@media (max-width: 600px) {
-		.svc-row-info p { display: none; }
-		.svc-thumb { display: none; }
-		.insta-grid { grid-template-columns: repeat(2, 1fr); }
-		.book-cta-inner { flex-direction: column; align-items: flex-start; }
-	}
+.bk-card.is-picked {
+	border-color: var(--accent);
+	background: var(--accent-wash);
+	box-shadow: inset 0 0 0 1px var(--accent);
+}
+
+.bk-card-head { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; }
+
+.bk-card-title {
+	font-family: var(--font-display);
+	font-size: 22px;
+	letter-spacing: -.01em;
+	line-height: 1.1;
+}
+
+.bk-card-price {
+	font-family: var(--font-mono);
+	font-size: 14px;
+	color: var(--muted);
+}
+
+.bk-card-meta {
+	font-family: var(--font-mono);
+	font-size: 10.5px;
+	letter-spacing: 1.8px;
+	text-transform: uppercase;
+	color: var(--muted);
+	margin-bottom: 2px;
+}
+
+.bk-card-blurb { font-size: 13px; line-height: 1.5; color: var(--muted); margin-top: 4px; }
+
+.bk-card-avatar { width: 100%; aspect-ratio: 1; margin-bottom: 12px; overflow: hidden; }
+.bk-card-any { justify-content: center; min-height: 140px; }
+
+.bk-label {
+	font-family: var(--font-mono);
+	font-size: 10.5px;
+	letter-spacing: 2px;
+	text-transform: uppercase;
+	color: var(--muted);
+	margin-bottom: 14px;
+	display: block;
+}
+
+.bk-days {
+	display: grid;
+	grid-template-columns: repeat(10, 1fr);
+	gap: 6px;
+}
+
+.bk-day {
+	background: transparent;
+	border: 1px solid var(--line);
+	padding: 14px 6px;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 2px;
+	cursor: pointer;
+	color: var(--text);
+	transition: all .18s;
+	font-family: inherit;
+}
+
+.bk-day:hover { border-color: var(--text); }
+.bk-day.is-picked { background: var(--accent); color: var(--accent-fg); border-color: var(--accent); }
+.bk-day-dow { font-family: var(--font-mono); font-size: 10px; letter-spacing: 1.4px; color: var(--muted); }
+.bk-day.is-picked .bk-day-dow { color: var(--accent-fg); opacity: .7; }
+.bk-day-num { font-family: var(--font-display); font-size: 24px; line-height: 1; letter-spacing: -.02em; }
+.bk-day-mon { font-family: var(--font-mono); font-size: 9.5px; letter-spacing: 1.4px; color: var(--muted); }
+.bk-day.is-picked .bk-day-mon { color: var(--accent-fg); opacity: .7; }
+
+.bk-times { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; }
+
+.bk-time-btn {
+	background: transparent;
+	border: 1px solid var(--line);
+	padding: 14px 12px;
+	color: var(--text);
+	cursor: pointer;
+	font-family: var(--font-mono);
+	font-size: 14px;
+	letter-spacing: 1px;
+	transition: all .18s;
+}
+
+.bk-time-btn:hover:not(:disabled) { border-color: var(--text); }
+.bk-time-btn.is-picked { background: var(--accent); color: var(--accent-fg); border-color: var(--accent); }
+.bk-time-btn.is-taken { color: var(--muted); cursor: not-allowed; opacity: .4; text-decoration: line-through; }
+
+.bk-details { display: grid; grid-template-columns: 1fr 1fr; gap: 18px 32px; }
+
+.bk-field { display: flex; flex-direction: column; gap: 8px; }
+
+.bk-field input {
+	background: transparent;
+	border: none;
+	border-bottom: 1px solid var(--line);
+	padding: 10px 0;
+	font-family: var(--font-display);
+	font-size: 22px;
+	color: var(--text);
+	outline: none;
+	letter-spacing: -.01em;
+}
+
+.bk-field input:focus { border-bottom-color: var(--accent); }
+.bk-field input::placeholder { color: var(--muted); opacity: .6; }
+
+.bk-summary {
+	grid-column: 1 / -1;
+	margin-top: 22px;
+	border-top: 1px solid var(--line);
+	padding-top: 22px;
+	display: flex;
+	flex-direction: column;
+	gap: 10px;
+}
+
+.bk-summary-line {
+	display: flex;
+	justify-content: space-between;
+	align-items: baseline;
+	font-family: var(--font-mono);
+	font-size: 12px;
+	letter-spacing: 1.2px;
+	text-transform: uppercase;
+	color: var(--muted);
+}
+
+.bk-summary-line strong {
+	font-family: var(--font-display);
+	font-size: 18px;
+	letter-spacing: -.01em;
+	color: var(--text);
+	font-weight: 300;
+	text-transform: none;
+}
+
+.bk-summary-total strong { font-size: 24px; }
+
+.bk-nav { display: flex; justify-content: space-between; align-items: center; margin-top: 40px; }
+
+.bk-btn {
+	font-family: var(--font-mono);
+	font-size: 12px;
+	letter-spacing: 2.4px;
+	text-transform: uppercase;
+	padding: 18px 30px;
+	cursor: pointer;
+	border: 1px solid var(--line);
+	background: transparent;
+	color: var(--text);
+	transition: all .2s;
+	display: inline-flex;
+	align-items: center;
+	gap: 14px;
+}
+
+.bk-btn:disabled { opacity: .3; cursor: not-allowed; }
+.bk-btn-ghost:hover:not(:disabled) { border-color: var(--text); }
+.bk-btn-primary { background: var(--accent); color: var(--accent-fg); border-color: var(--accent); }
+.bk-btn-primary:hover:not(:disabled) { filter: brightness(1.1); }
+
+.bk-confirm {
+	text-align: center;
+	padding: 60px 0;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+}
+
+.bk-confirm-mark {
+	width: 64px;
+	height: 64px;
+	border: 1px solid var(--accent);
+	color: var(--accent);
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	font-size: 28px;
+	margin-bottom: 24px;
+}
+
+.bk-confirm-eyebrow {
+	font-family: var(--font-mono);
+	font-size: 11px;
+	letter-spacing: 2.4px;
+	text-transform: uppercase;
+	color: var(--muted);
+	margin-bottom: 12px;
+}
+
+.bk-confirm-title {
+	font-family: var(--font-display);
+	font-size: 40px;
+	letter-spacing: -.02em;
+	line-height: 1.1;
+	margin: 0 auto 16px;
+	max-width: 640px;
+	font-weight: 300;
+}
+
+.bk-confirm-body {
+	font-size: 15px;
+	line-height: 1.6;
+	color: var(--muted);
+	max-width: 480px;
+	margin: 0 auto 28px;
+}
+
+/* ─── Testimonials ────────────────────────────────────────── */
+.quotes-section { text-align: center; position: relative; }
+
+.quote-mark {
+	font-family: var(--font-display);
+	font-size: 200px;
+	line-height: 0.6;
+	color: var(--accent);
+	opacity: 0.2;
+	margin-bottom: -50px;
+	display: block;
+}
+
+.quote-stack { position: relative; min-height: 200px; }
+
+.quote {
+	position: absolute;
+	inset: 0;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 32px;
+	opacity: 0;
+	transition: opacity .6s;
+	margin: 0;
+}
+
+.quote.is-active { opacity: 1; }
+
+.quote-text {
+	font-family: var(--font-display);
+	font-weight: 300;
+	font-style: italic;
+	font-size: clamp(24px, 3.5vw, 44px);
+	line-height: 1.2;
+	letter-spacing: -0.01em;
+	max-width: 860px;
+	margin: 0;
+}
+
+.quote-cite {
+	display: flex;
+	flex-direction: column;
+	gap: 6px;
+	font-style: normal;
+}
+
+.quote-cite span:first-child { font-size: 15px; color: var(--text); }
+
+.quote-dots { display: flex; gap: 8px; justify-content: center; margin-top: 40px; }
+
+.quote-dot {
+	width: 8px;
+	height: 8px;
+	background: transparent;
+	border: 1px solid var(--line-2);
+	padding: 0;
+	cursor: pointer;
+	transition: all .2s;
+}
+
+.quote-dot.is-active { background: var(--accent); border-color: var(--accent); }
+
+/* ─── Gift cards ──────────────────────────────────────────── */
+.gift-section { background: var(--bg-2); }
+
+.gift-grid {
+	display: grid;
+	grid-template-columns: 1fr 1fr;
+	gap: 80px;
+	align-items: center;
+}
+
+.gift-lede {
+	font-size: 17px;
+	line-height: 1.65;
+	color: var(--fg-dim);
+	margin: 24px 0;
+}
+
+.gift-amounts {
+	display: flex;
+	gap: 10px;
+	margin-bottom: 32px;
+	flex-wrap: wrap;
+}
+
+.gift-amount {
+	font-family: var(--font-display);
+	font-weight: 300;
+	font-size: 24px;
+	letter-spacing: -0.01em;
+	padding: 16px 24px;
+	background: transparent;
+	border: 1px solid var(--line-2);
+	color: var(--text);
+	cursor: pointer;
+	transition: all .2s;
+}
+
+.gift-amount:hover { border-color: var(--text); }
+.gift-amount.is-picked { background: var(--accent); color: var(--accent-fg); border-color: var(--accent); }
+
+.gift-buy-btn {
+	display: inline-flex;
+	align-items: center;
+	gap: 14px;
+	font-family: var(--font-mono);
+	font-size: 12px;
+	letter-spacing: 2.4px;
+	text-transform: uppercase;
+	padding: 20px 34px;
+	background: var(--accent);
+	color: var(--accent-fg);
+	border: none;
+	cursor: pointer;
+	transition: filter .2s;
+}
+
+.gift-buy-btn:hover { filter: brightness(1.1); }
+
+.gift-card-visual {
+	aspect-ratio: 1.6 / 1;
+	background: linear-gradient(135deg, var(--text) 0%, color-mix(in oklab, var(--text) 70%, var(--accent)) 100%);
+	color: var(--bg);
+	padding: 40px;
+	display: flex;
+	flex-direction: column;
+	justify-content: space-between;
+	box-shadow: 0 40px 80px -20px rgba(0,0,0,0.6);
+	transform: rotate(-2deg);
+	transition: transform .4s;
+}
+
+.gift-card-visual:hover { transform: rotate(0deg) scale(1.02); }
+
+.gift-card-inner { display: flex; flex-direction: column; justify-content: space-between; height: 100%; }
+
+.gift-card-top { display: flex; justify-content: space-between; align-items: center; }
+
+.gift-card-logo { height: 28px; filter: brightness(0); opacity: 0.7; }
+
+.gift-card-amount {
+	font-family: var(--font-display);
+	font-weight: 300;
+	font-size: clamp(56px, 7vw, 100px);
+	line-height: 1;
+	letter-spacing: -0.03em;
+	font-style: italic;
+}
+
+.gift-card-foot { display: flex; justify-content: space-between; }
+
+/* ─── Shop ────────────────────────────────────────────────── */
+.shop-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 28px; }
+
+.shop-card { display: flex; flex-direction: column; gap: 20px; cursor: pointer; text-decoration: none; color: inherit; }
+
+.shop-img-wrap {
+	aspect-ratio: 1;
+	overflow: hidden;
+	background: var(--bg-2);
+}
+
+.shop-img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform .4s; }
+.shop-card:hover .shop-img { transform: scale(1.04); }
+
+.shop-img-placeholder {
+	width: 100%;
+	height: 100%;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	background: var(--surface);
+}
+
+.shop-img-placeholder span {
+	font-family: var(--font-display);
+	font-size: 3rem;
+	color: var(--muted);
+	opacity: 0.4;
+}
+
+.shop-meta {
+	display: flex;
+	justify-content: space-between;
+	align-items: flex-start;
+	padding-top: 16px;
+	border-top: 1px solid var(--line);
+}
+
+.shop-name { font-family: var(--font-display); font-weight: 300; font-size: 22px; letter-spacing: -0.01em; margin: 0 0 4px; }
+.shop-price { font-family: var(--font-display); font-weight: 300; font-size: 22px; letter-spacing: -0.01em; }
+
+/* ─── Location ────────────────────────────────────────────── */
+.visit-grid {
+	display: grid;
+	grid-template-columns: 1fr 1fr;
+	grid-template-rows: auto auto;
+	gap: 40px 80px;
+}
+
+.visit-text { grid-row: 1 / 3; display: flex; flex-direction: column; gap: 40px; }
+
+.visit-info { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+
+.visit-detail { margin: 8px 0 0; font-size: 18px; font-family: var(--font-display); font-weight: 300; letter-spacing: -0.01em; }
+
+.hours-list { list-style: none; padding: 0; margin: 0; }
+
+.hours-row {
+	display: flex;
+	justify-content: space-between;
+	padding: 14px 0;
+	border-bottom: 1px solid var(--line);
+	font-family: var(--font-display);
+	font-weight: 300;
+	font-size: 20px;
+	letter-spacing: -0.01em;
+}
+
+.hours-closed { color: var(--muted); font-style: italic; }
+
+.visit-map {
+	aspect-ratio: 16/9;
+	grid-column: 2;
+	overflow: hidden;
+	filter: grayscale(1) contrast(1.1) brightness(0.5);
+}
+
+/* ─── Responsive ──────────────────────────────────────────── */
+@media (max-width: 960px) {
+	.hero-grid { grid-template-columns: 1fr; gap: 48px; }
+	.hero-img-wrap { aspect-ratio: 4/3; }
+	.svc-row { grid-template-columns: 1fr auto; gap: 8px; }
+	.svc-num, .svc-dur, .svc-blurb { display: none; }
+	.team-grid { grid-template-columns: 1fr; }
+	.shop-grid { grid-template-columns: 1fr 1fr; }
+	.visit-grid { grid-template-columns: 1fr; }
+	.visit-text { grid-row: auto; }
+	.visit-map { grid-column: auto; aspect-ratio: 4/3; }
+	.gift-grid { grid-template-columns: 1fr; gap: 48px; }
+	.ig-grid { grid-template-columns: 1fr; grid-auto-rows: auto; }
+	.ig-item { grid-column: auto !important; grid-row: auto !important; }
+	.ig-img-wrap { aspect-ratio: 1; }
+	.bk-grid-services, .bk-grid-barbers { grid-template-columns: repeat(2, 1fr); }
+	.bk-days { grid-template-columns: repeat(5, 1fr); }
+	.bk-times { grid-template-columns: repeat(3, 1fr); }
+	.bk-details { grid-template-columns: 1fr; }
+	.bk-confirm-title { font-size: 28px; }
+	.ed-section { padding: 80px 24px; }
+}
+
+@media (max-width: 600px) {
+	.hero-display { font-size: clamp(56px, 14vw, 80px); }
+	.ed-hero { padding-top: 70px; }
+	.marquee-item { font-size: 28px; }
+	.shop-grid { grid-template-columns: 1fr; }
+	.hero-inner { padding: 20px; }
+	.bk-progress { grid-template-columns: repeat(2, 1fr); }
+	.bk-step-label { font-size: 14px; }
+	.quote-stack { min-height: 280px; }
+}
 </style>
+
+<script>
+// ─── Booking flow ────────────────────────────────────────────────────────────
+const BK = {
+	step: 0,
+	picked: { service: null as string|null, barber: null as string|null, date: null as string|null, time: null as string|null },
+	name: '',
+	phone: '',
+};
+
+const SERVICES_DATA = [
+	{ id: 'cut',   name: "The Cut",        duration: "45 min", price: 55 },
+	{ id: 'skin',  name: "Skin Fade",      duration: "55 min", price: 65 },
+	{ id: 'beard', name: "Beard Sculpt",   duration: "30 min", price: 40 },
+	{ id: 'combo', name: "Cut + Beard",    duration: "75 min", price: 90 },
+	{ id: 'shave', name: "Straight Razor", duration: "45 min", price: 60 },
+	{ id: 'dad',   name: "Father & Son",   duration: "75 min", price: 85 },
+];
+
+const BARBERS_DATA = [
+	{ id: 'amin',  name: "Amin" },
+	{ id: 'jules', name: "Jules" },
+	{ id: 'theo',  name: "Theo" },
+];
+
+const TAKEN_TIMES = new Set(['10:30', '12:00', '3:00']);
+const TIMES = ['9:00','9:45','10:30','11:15','12:00','1:30','2:15','3:00','3:45','4:30'];
+
+function buildDays() {
+	const days = [];
+	const start = new Date();
+	start.setDate(start.getDate() + 1);
+	for (let i = 0; i < 10; i++) {
+		const d = new Date(start);
+		d.setDate(start.getDate() + i);
+		days.push({
+			iso: d.toISOString().slice(0, 10),
+			dow: d.toLocaleDateString('en-AU', { weekday: 'short' }).toUpperCase(),
+			day: d.getDate(),
+			mon: d.toLocaleDateString('en-AU', { month: 'short' }).toUpperCase(),
+		});
+	}
+	return days;
+}
+
+function canAdvance() {
+	if (BK.step === 0) return !!BK.picked.service;
+	if (BK.step === 1) return !!BK.picked.barber;
+	if (BK.step === 2) return !!BK.picked.date && !!BK.picked.time;
+	if (BK.step === 3) return BK.name.trim().length > 1 && BK.phone.replace(/\D/g,'').length >= 8;
+	return false;
+}
+
+function updateProgress() {
+	document.querySelectorAll('.bk-step').forEach((el, i) => {
+		el.classList.toggle('is-active', i === BK.step);
+		el.classList.toggle('is-done', i < BK.step);
+	});
+}
+
+function showPanel(step: number) {
+	document.querySelectorAll('.bk-panel').forEach(p => p.setAttribute('hidden', ''));
+	const panel = document.getElementById(`bk-panel-${step}`);
+	if (panel) panel.removeAttribute('hidden');
+}
+
+function updateNav() {
+	const back = document.getElementById('bk-back') as HTMLButtonElement;
+	const next = document.getElementById('bk-next') as HTMLButtonElement;
+	if (!back || !next) return;
+	back.disabled = BK.step === 0;
+	next.disabled = !canAdvance();
+	next.innerHTML = BK.step === 3 ? 'Confirm booking <span>→</span>' : 'Continue <span>→</span>';
+}
+
+function renderDays() {
+	const wrap = document.getElementById('bk-days');
+	if (!wrap) return;
+	const days = buildDays();
+	wrap.innerHTML = days.map(d => `
+		<button class="bk-day${BK.picked.date === d.iso ? ' is-picked' : ''}" data-date="${d.iso}">
+			<span class="bk-day-dow">${d.dow}</span>
+			<span class="bk-day-num">${d.day}</span>
+			<span class="bk-day-mon">${d.mon}</span>
+		</button>
+	`).join('');
+	wrap.querySelectorAll('.bk-day').forEach(btn => {
+		btn.addEventListener('click', () => {
+			BK.picked.date = (btn as HTMLElement).dataset.date ?? null;
+			BK.picked.time = null;
+			renderDays();
+			renderTimes();
+			updateNav();
+		});
+	});
+}
+
+function renderTimes() {
+	const timesWrap = document.getElementById('bk-times-wrap');
+	const timesEl = document.getElementById('bk-times');
+	if (!timesWrap || !timesEl) return;
+	if (!BK.picked.date) { timesWrap.setAttribute('hidden', ''); return; }
+	timesWrap.removeAttribute('hidden');
+	timesEl.innerHTML = TIMES.map(t => {
+		const taken = TAKEN_TIMES.has(t);
+		return `<button class="bk-time-btn${BK.picked.time === t ? ' is-picked' : ''}${taken ? ' is-taken' : ''}" data-time="${t}" ${taken ? 'disabled' : ''}>${t}</button>`;
+	}).join('');
+	timesEl.querySelectorAll('.bk-time-btn:not(:disabled)').forEach(btn => {
+		btn.addEventListener('click', () => {
+			BK.picked.time = (btn as HTMLElement).dataset.time ?? null;
+			renderTimes();
+			updateNav();
+		});
+	});
+}
+
+function renderSummary() {
+	const el = document.getElementById('bk-summary');
+	if (!el) return;
+	const svc = SERVICES_DATA.find(s => s.id === BK.picked.service);
+	const barber = BK.picked.barber === 'any' ? 'First available' : BARBERS_DATA.find(b => b.id === BK.picked.barber)?.name;
+	const dateStr = BK.picked.date ? new Date(BK.picked.date).toLocaleDateString('en-AU', { weekday: 'short', day: 'numeric', month: 'short' }) : '';
+	el.innerHTML = `
+		<div class="bk-summary-line"><span>Service</span><strong>${svc?.name ?? ''}</strong></div>
+		<div class="bk-summary-line"><span>Barber</span><strong>${barber ?? ''}</strong></div>
+		<div class="bk-summary-line"><span>When</span><strong>${dateStr} · ${BK.picked.time ?? ''}</strong></div>
+		<div class="bk-summary-line bk-summary-total"><span>Total</span><strong>$${svc?.price ?? ''}</strong></div>
+	`;
+}
+
+function showConfirm() {
+	document.getElementById('bk-nav')?.setAttribute('hidden', '');
+	document.getElementById('bk-panel-3')?.setAttribute('hidden', '');
+	const done = document.getElementById('bk-panel-done');
+	if (done) done.removeAttribute('hidden');
+	const title = document.getElementById('bk-confirm-title');
+	if (title && BK.picked.date) {
+		const dateStr = new Date(BK.picked.date).toLocaleDateString('en-AU', { weekday: 'long', day: 'numeric', month: 'long' });
+		title.textContent = `See you ${dateStr}, ${BK.picked.time}.`;
+	}
+	// Progress
+	document.querySelectorAll('.bk-step').forEach(el => el.classList.add('is-done'));
+}
+
+function resetBooking() {
+	BK.step = 0;
+	BK.picked = { service: null, barber: null, date: null, time: null };
+	BK.name = '';
+	BK.phone = '';
+	// Unmark all service/barber cards
+	document.querySelectorAll('.bk-card').forEach(c => c.classList.remove('is-picked'));
+	document.getElementById('bk-nav')?.removeAttribute('hidden');
+	showPanel(0);
+	updateProgress();
+	updateNav();
+}
+
+// Init
+document.addEventListener('DOMContentLoaded', () => {
+	renderDays();
+	updateNav();
+
+	// Card picks (service + barber steps)
+	document.querySelectorAll('[data-pick]').forEach(btn => {
+		btn.addEventListener('click', () => {
+			const type = (btn as HTMLElement).dataset.pick!;
+			const val = (btn as HTMLElement).dataset.value!;
+			BK.picked[type as 'service'|'barber'] = val;
+			// Update card highlight
+			btn.closest('.bk-grid')?.querySelectorAll('.bk-card').forEach(c => c.classList.remove('is-picked'));
+			btn.classList.add('is-picked');
+			updateNav();
+		});
+	});
+
+	// Name/phone inputs
+	document.getElementById('bk-name')?.addEventListener('input', e => {
+		BK.name = (e.target as HTMLInputElement).value;
+		updateNav();
+	});
+	document.getElementById('bk-phone')?.addEventListener('input', e => {
+		BK.phone = (e.target as HTMLInputElement).value;
+		updateNav();
+	});
+
+	// Next
+	document.getElementById('bk-next')?.addEventListener('click', () => {
+		if (!canAdvance()) return;
+		if (BK.step === 3) { showConfirm(); return; }
+		BK.step++;
+		updateProgress();
+		showPanel(BK.step);
+		if (BK.step === 3) renderSummary();
+		updateNav();
+	});
+
+	// Back
+	document.getElementById('bk-back')?.addEventListener('click', () => {
+		if (BK.step === 0) return;
+		BK.step--;
+		updateProgress();
+		showPanel(BK.step);
+		updateNav();
+	});
+
+	// Prog step click (go back)
+	document.querySelectorAll('.bk-step').forEach((el, i) => {
+		el.addEventListener('click', () => {
+			if (i < BK.step) {
+				BK.step = i;
+				updateProgress();
+				showPanel(i);
+				updateNav();
+			}
+		});
+	});
+
+	// Reset
+	document.getElementById('bk-reset')?.addEventListener('click', resetBooking);
+});
+
+// ─── Testimonials carousel ──────────────────────────────────────────────────
+let quoteIdx = 0;
+const quotes = document.querySelectorAll('.quote');
+const dots = document.querySelectorAll('.quote-dot');
+
+function showQuote(i: number) {
+	quotes.forEach((q, j) => {
+		q.classList.toggle('is-active', j === i);
+		q.setAttribute('aria-hidden', j !== i ? 'true' : 'false');
+	});
+	dots.forEach((d, j) => d.classList.toggle('is-active', j === i));
+}
+
+dots.forEach((d, i) => {
+	d.addEventListener('click', () => { quoteIdx = i; showQuote(i); });
+});
+
+setInterval(() => {
+	quoteIdx = (quoteIdx + 1) % quotes.length;
+	showQuote(quoteIdx);
+}, 6000);
+
+// ─── Gift card amount selector ──────────────────────────────────────────────
+let giftAmount = 90;
+
+document.querySelectorAll('.gift-amount').forEach(btn => {
+	btn.addEventListener('click', () => {
+		giftAmount = parseInt((btn as HTMLElement).dataset.amount ?? '90');
+		document.querySelectorAll('.gift-amount').forEach(b => b.classList.remove('is-picked'));
+		btn.classList.add('is-picked');
+		const amountEl = document.getElementById('gift-card-amount');
+		if (amountEl) amountEl.textContent = `$${giftAmount}`;
+		const numEl = document.getElementById('gift-card-num');
+		if (numEl) numEl.textContent = `№ DB-${String(giftAmount * 7).padStart(6, '0')}`;
+		const buyBtn = document.getElementById('gift-buy-btn');
+		if (buyBtn) buyBtn.innerHTML = `Send a $${giftAmount} card <span>→</span>`;
+	});
+});
+</script>
